@@ -65,6 +65,37 @@ a{text-decoration:none;color:inherit}
 .bnav-item{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.3rem .8rem;cursor:pointer;transition:all var(--tr);color:var(--txt3);font-size:.6rem;font-weight:500;border-radius:8px;position:relative}
 .bnav-item svg{width:22px;height:22px}
 .bnav-item.on{color:var(--ac)}
+
+/* SIDEBAR — 与仓库端同结构 */
+.shop-sb{background:var(--bg2);border-right:1px solid var(--border);padding:1.1rem 0;display:flex;flex-direction:column;position:fixed;top:0;left:0;width:250px;height:100vh;z-index:120;transition:transform .3s ease}
+.shop-sb .sbh{display:flex;align-items:center;gap:.5rem;padding:0 1.1rem 1.2rem;border-bottom:1px solid var(--border);margin-bottom:.5rem}
+.shop-sb .sbh i{width:30px;height:30px;background:var(--ac);border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.9rem;font-style:normal}
+.shop-sb .sbh b{font-family:'Inter',sans-serif;font-weight:700;font-size:1.05rem;font-style:normal}
+.shop-sb .sbh b span{color:var(--ac)}
+.shop-nav{flex:1;padding:.15rem .5rem;overflow-y:auto}
+.shop-nl{font-size:.6rem;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);padding:.75rem .65rem .35rem}
+.shop-ni{display:flex;align-items:center;gap:.5rem;padding:.55rem .65rem;border-radius:10px;cursor:pointer;color:var(--txt2);font-size:.82rem;font-weight:500;transition:all .15s}
+.shop-ni:hover{background:var(--bg3);color:var(--txt)}
+.shop-ni.on{background:var(--ac);color:#fff}
+.shop-ni.on svg{stroke:#fff}
+.shop-ni svg{flex-shrink:0}
+.shop-ni .sn-c{margin-left:auto;font-size:.68rem;opacity:.55}
+.shop-sbf{padding:.85rem 1rem;border-top:1px solid var(--border);margin-top:.35rem}
+.shop-sbf .sb-user{display:flex;align-items:center;gap:.55rem;cursor:pointer;padding:.35rem .25rem;border-radius:8px}
+.shop-sbf .sb-user:hover{background:var(--bg3)}
+.shop-sbf .sba{width:32px;height:32px;border-radius:50%;background:var(--ac);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.shop-wrap{display:flex;min-height:100vh}
+.shop-main{flex:1;margin-left:250px;display:flex;flex-direction:column;min-width:0}
+.shop-main .main{max-width:1180px}
+.shop-sb-toggle{display:none}
+@media(max-width:900px){
+  .shop-sb{transform:translateX(-100%)}
+  .shop-sb.open{transform:translateX(0)}
+  .shop-main{margin-left:0}
+  .shop-sb-toggle{display:inline-flex}
+}
+
+
 .bnav-item .bnav-badge{position:absolute;top:0;right:4px;min-width:16px;height:16px;background:var(--red);color:#fff;border-radius:8px;font-size:.55rem;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
 /* ==================== PAGES ==================== */
@@ -310,7 +341,7 @@ a{text-decoration:none;color:inherit}
 .order-tabs::-webkit-scrollbar{display:none}
 .order-tab{padding:.45rem .85rem;border-radius:20px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all var(--tr);white-space:nowrap;color:var(--txt3);background:var(--bg2);border:1px solid var(--border)}
 .order-tab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
-.order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:.8rem;transition:all var(--tr)}
+.order-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:.8rem;transition:all var(--tr);user-select:none;-webkit-user-select:none;position:relative;max-width:100%}
 .order-card:hover{border-color:var(--ac)}
 .order-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:var(--bg3)}
 .order-no{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500}
@@ -604,9 +635,14 @@ input[id^="lp_"]{
 </style>
 </head>
 <body>
-
-<!-- ==================== APP ==================== -->
-<div class="app" id="app">
+<div class="shop-wrap">
+  <aside class="shop-sb" id="shopSidebar">
+    <div class="sbh"><i>C</i><b>Cloud<span>Stock</span></b></div>
+    <nav class="shop-nav" id="shopNav"></nav>
+    <div class="sbf"><div class="sb-user" onclick="navigate('user')"><div class="sba" id="sbAvatar">?</div><div><div id="sbName" style="font-size:.82rem;font-weight:600">Guest</div><div id="sbRole" style="font-size:.68rem;color:var(--txt3)">Member</div></div></div></div>
+  </aside>
+  <div class="shop-main">
+  <div class="app" id="app">
 
   <!-- HEADER -->
   <header class="hdr">
@@ -659,6 +695,8 @@ input[id^="lp_"]{
   </nav>
 
 </div>
+</div><!-- /shop-main -->
+</div><!-- /shop-wrap -->
 
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
@@ -706,8 +744,11 @@ const i18n = {
     submitOrder:'提交订单',pleaseLogin:'请先登录',checkout:'去结算',checkoutTitle:'订单结算',backToCart:'返回购物车',shippingAddress:'收货地址',noAddress:'暂无收货地址，下单将使用您的注册信息',loginPromptDesc:'登录后才能结算下单',btnCancel:'取消',
     // 订单
     myOrders:'我的订单',noOrders:'暂无订单',noOrdersHint:'快去挑选心仪的商品吧',
+    tabUnpaid:'待付款',tabToShip:'待发货',tabShipped:'正在运输',tabDone:'已完成',tabCancelled:'已取消',
+    navHome:'首页',navCart:'购物车',navOrders:'我的订单',navUser:'我的',navAll:'全部',
+    navHomeAll:'全部商品',navTransit:'正在运输',
     stPending:'待确认',stConfirmed:'已确认',stPicking:'备货中',stShipped:'已发货',
-    stDelivered:'已送达',stCompleted:'已完成',stCancelled:'已取消',stDraft:'草稿',
+    stDelivered:'已送达',stCompleted:'已完成',stCancelled:'已取消',stDraft:'草稿',cancelOrder:'取消订单',cancelOrderConfirm:'确定取消该订单？取消后库存将回补。',orderCancelled:'订单已取消',cannotCancel:'当前状态不可取消',
     stDone:'已完成',stCancel:'已取消',
     payPendingBill:'待上传账单',payPending:'待确认付款',payPaid:'已付款',payRefunded:'已退款',payUnpaid:'未付款',
     billTimeout:'账单超时',
@@ -820,8 +861,11 @@ const i18n = {
     submitOrder:'Enviar Pedido',pleaseLogin:'Faça login primeiro',checkout:'Finalizar',checkoutTitle:'Finalizar Pedido',backToCart:'Voltar ao Carrinho',shippingAddress:'Endereço de Entrega',noAddress:'Sem endereço cadastrado, usaremos seus dados de cadastro',loginPromptDesc:'Faça login para finalizar o pedido',btnCancel:'Cancelar',
     // Pedidos
     myOrders:'Meus Pedidos',noOrders:'Nenhum pedido',noOrdersHint:'Vá escolher seus produtos favoritos',
+    tabUnpaid:'Aguardando pgto',tabToShip:'A enviar',tabShipped:'Em trânsito',tabDone:'Concluído',tabCancelled:'Cancelado',
+    navHome:'Início',navCart:'Carrinho',navOrders:'Meus Pedidos',navUser:'Minha conta',navAll:'Todos',
+    navHomeAll:'Todos produtos',navTransit:'Em trânsito',
     stPending:'Pendente',stConfirmed:'Confirmado',stPicking:'Preparando',stShipped:'Enviado',
-    stDelivered:'Entregue',stCompleted:'Concluído',stCancelled:'Cancelado',stDraft:'Rascunho',
+    stDelivered:'Entregue',stCompleted:'Concluído',stCancelled:'Cancelado',stDraft:'Rascunho',cancelOrder:'Cancelar pedido',cancelOrderConfirm:'Cancelar este pedido? O estoque será devolvido.',orderCancelled:'Pedido cancelado',cannotCancel:'Não é possível cancelar agora',
     stDone:'Concluído',stCancel:'Cancelado',
     payPendingBill:'Aguardando comprovante',payPending:'Aguardando confirmação',payPaid:'Pago',payRefunded:'Reembolsado',payUnpaid:'Não pago',
     billTimeout:'Comprovante expirado',
@@ -961,6 +1005,31 @@ function safeQ(p) {
     .catch(() => ({ data: [], error: { message: 'denied' } }));
 }
 
+function hImg(inp, bid, vn) {
+  const f = inp.files && inp.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = function(e) {
+    window[vn] = e.target.result;
+    const b = document.getElementById(bid);
+    if (!b) return;
+    const inId = bid.replace('IB', 'IF');
+    b.innerHTML = '<img src="' + e.target.result + '" alt="" />'
+      + '<span class="ir" onclick="event.stopPropagation();window[\'' + vn + '\']=\'\';rmImg(\'' + vn + '\',\'' + bid + '\')" style="position:absolute;top:2px;right:2px;z-index:2;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer">×</span>'
+      + '<input type="file" id="' + inId + '" accept="image/*" onchange="hImg(this,\'' + bid + '\',\'' + vn + '\')" />';
+  };
+  r.onerror = function() { toast(t('uploadFailed') || 'upload failed', 'error'); };
+  r.readAsDataURL(f);
+}
+
+function rmImg(vn, bid) {
+  window[vn] = '';
+  const b = document.getElementById(bid);
+  if (!b) return;
+  const inId = bid.replace('IB', 'IF');
+  b.innerHTML = '<span class="ia">+</span><input type="file" id="' + inId + '" accept="image/*" onchange="hImg(this,\'' + bid + '\',\'' + vn + '\')" />';
+}
+
 function tokenizeSearch(q) {
   return String(q || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
 }
@@ -1084,14 +1153,24 @@ async function loadAllData() {
     ]);
     Store.categories = (catR.data || []).map(c => ({ id: c.id, name: c.name, code: c.code, icon: c.icon, order: c.order_num, parent_id: c.parent_id || null, depth: c.depth || 0, visible: c.visible !== false, image: c.image || '', description: c.description || '' }));
     Store.productCats = pcR.data || [];
-    Store.products = (prodR.data || []).map(p => ({
+    Store.products = (prodR.data || []).map(p => {
+      let st = Number(p.stock);
+      if (!st && p.size_stock) {
+        try {
+          const ss = typeof p.size_stock === 'string' ? JSON.parse(p.size_stock) : p.size_stock;
+          if (ss && typeof ss === 'object') st = Object.values(ss).reduce((a, b) => a + (Number(b) || 0), 0);
+        } catch (_) {}
+      }
+      return {
       id: p.id, name: p.name, sku: p.sku,
       catIds: Store.productCats.filter(x => x.product_id === p.id).map(x => x.category_id),
-      stock: p.stock || 0, price: Number(p.price || 0), cost: Number(p.cost || 0),
+      stock: st || 0, price: Number(p.price || 0), cost: Number(p.cost || 0),
       img: p.image || '', note: p.note || '',
       desc: p.description || '', images: p.images || [],
-      sales: p.sales || 0, tags: p.tags || [], featured: p.featured || false, label: p.label || ''
-    }));
+      sales: p.sales || 0, tags: p.tags || [], featured: p.featured || false, label: p.label || '',
+      sizeStock: p.size_stock || {}, sizes: p.sizes || []
+      };
+    });
     // Optional tables - only query if they exist
     try {
       const { data: levelData, error: levelErr } = await sb.from('member_levels').select('*').order('order_num');
@@ -1297,6 +1376,90 @@ function logoutMember() {
 let currentPage = 'home';
 let searchQuery = '';
 
+
+// ==================== SHOP SIDEBAR NAV ====================
+var homeLabel = '';
+var orderSection = ''; // '' = all sections; unpaid|toShip|shipped|done|cancelled
+
+function setHomeLabel(lab) {
+  homeLabel = lab || '';
+  window._filterCatId = 'all';
+  catPath = [];
+  searchQuery = '';
+  const si = document.getElementById('searchInput');
+  if (si) si.value = '';
+  navigate('home');
+}
+
+function setOrderSection(sec) {
+  orderSection = sec || '';
+  navigate('orders');
+}
+
+function buildShopNav() {
+  const el = document.getElementById('shopNav');
+  if (!el) return;
+  const page = currentPage;
+  const V = '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">', R = '</svg>';
+  const icons = {
+    home: V+'<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>',
+    cart: V+'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>',
+    ord: V+'<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>',
+    user: V+'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'
+  };
+  let h = '';
+  h += '<div class="shop-nl">' + t('navHome') + '</div>';
+  h += '<div class="shop-ni' + (page==='home' && !homeLabel ? ' on' : '') + '" onclick="setHomeLabel(\'\')">' + icons.home + ' ' + t('navHomeAll') + '</div>';
+  [['novo','Novo'],['normal','Normal'],['oferta','Oferta'],['promocao','Promoção']].forEach(function(pair) {
+    const k = pair[0], name = pair[1];
+    h += '<div class="shop-ni' + (page==='home' && homeLabel===k ? ' on' : '') + '" style="padding-left:1.35rem" onclick="setHomeLabel(\'' + k + '\')">' + name + '</div>';
+  });
+  h += '<div class="shop-nl">' + t('navCart') + '</div>';
+  h += '<div class="shop-ni' + (page==='cart' || page==='checkout' ? ' on' : '') + '" onclick="navigate(\'cart\')">' + icons.cart + ' ' + t('navCart') + '</div>';
+  h += '<div class="shop-nl">' + t('navOrders') + '</div>';
+  const orderItems = [
+    ['', t('navOrders')],
+    ['unpaid', t('tabUnpaid')],
+    ['toShip', t('tabToShip')],
+    ['shipped', t('tabShipped')],
+    ['done', t('tabDone')]
+  ];
+  orderItems.forEach(function(it, idx) {
+    const on = page==='orders' && orderSection===it[0] && (it[0]!=='' || orderSection==='');
+    h += '<div class="shop-ni' + (on ? ' on' : '') + '" style="' + (idx ? 'padding-left:1.35rem;' : '') + '" onclick="setOrderSection(\'' + it[0] + '\')">' + (idx ? '' : icons.ord + ' ') + esc(it[1]) + '</div>';
+  });
+  h += '<div class="shop-nl">' + t('navUser') + '</div>';
+  h += '<div class="shop-ni' + (page==='user' ? ' on' : '') + '" onclick="navigate(\'user\')">' + icons.user + ' ' + t('navUser') + '</div>';
+  el.innerHTML = h;
+  // avatar
+  const m = Store.member;
+  const av = document.getElementById('sbAvatar');
+  const nm = document.getElementById('sbName');
+  const rl = document.getElementById('sbRole');
+  if (av) av.textContent = (m && (m.name || m.username) || '?').charAt(0).toUpperCase();
+  if (nm) nm.textContent = (m && (m.name || m.username)) || 'Guest';
+  if (rl) rl.textContent = (m && m.email) || 'Member';
+}
+
+// hook navigate + renderPage
+const _navNavigate = navigate;
+navigate = function(page) {
+  const done = function() {
+    try { _navNavigate(page); } catch (e) {}
+    try { if (typeof buildShopNav === 'function') buildShopNav(); } catch (e) {}
+    const sbEl = document.getElementById('shopSidebar');
+    if (sbEl) sbEl.classList.remove('open');
+  };
+  const jobs = [];
+  try {
+    if (typeof loadAllData === 'function') jobs.push(Promise.resolve().then(function(){ return loadAllData(); }));
+    if (Store.member && typeof loadMemberOrders === 'function') jobs.push(Promise.resolve().then(function(){ return loadMemberOrders(); }));
+    if (typeof loadPaymentAccounts === 'function') jobs.push(Promise.resolve().then(function(){ return loadPaymentAccounts(); }));
+  } catch (e) {}
+  if (!jobs.length) { done(); return; }
+  Promise.all(jobs).then(done).catch(done);
+};
+
 function navigate(page) {
   currentPage = page;
   // Close modals
@@ -1325,6 +1488,7 @@ function renderPage() {
   renderUserArea();
   updateCartBadge();
   applyLang();
+  if (typeof buildShopNav === 'function') buildShopNav();
 }
 
 function renderUserArea() {
@@ -1352,11 +1516,11 @@ function renderHome() {
   let html = '';
 
   // Hero
-  if (!searchQuery) {
+  if (!searchQuery && !homeLabel) {
     html += '<div class="hero"><h1>' + t('welcomeTitle') + '</h1><p>' + t('welcomeDesc') + '</p></div>';
   }
 
-  const isRoot = !searchQuery && catPath.length === 0 && (!window._filterCatId || window._filterCatId === 'all');
+  const isRoot = !homeLabel && !searchQuery && catPath.length === 0 && (!window._filterCatId || window._filterCatId === 'all');
 
   // Breadcrumb (when inside a category)
   if (!searchQuery && catPath.length > 0) {
@@ -1444,6 +1608,17 @@ function renderHome() {
   if (window._filterCatId && window._filterCatId !== 'all') {
     const catIds = getDescendantIds(window._filterCatId);
     prods = prods.filter(p => p.catIds.some(cid => catIds.includes(cid)));
+  }
+  if (homeLabel) {
+    const lab = homeLabel;
+    prods = prods.filter(p => {
+      const l = String(p.label || '').toLowerCase();
+      if (lab === 'promocao') return l === 'promocao' || l === 'promo';
+      return l === lab;
+    });
+    if (!searchQuery && catPath.length === 0) {
+      html += '<div class="sec-title"><div class="sec-dot"></div>' + esc(lab) + ' <span style="font-size:.72rem;color:var(--txt3);font-weight:400">(' + prods.length + ')</span></div>';
+    }
   }
 
   // Show products only when inside a category or searching
@@ -1777,7 +1952,7 @@ function renderCart() {
 }
 
 // Shipping method
-let onibusImgData = '';
+var onibusImgData = '';
 function onShipMethodChange(val) {
   const el = document.getElementById('onibusFields');
   if (el) el.style.display = val === 'onibus' ? '' : 'none';
@@ -2083,14 +2258,17 @@ function renderCheckout() {
 }
 
 // ==================== ORDERS PAGE ====================
-function renderOrders() {
-  let html = '<div class="sec-title"><div class="sec-dot"></div>' + t('myOrders') + '</div>';
+function orderTabOf(o) {
+  const st = String((o && o.status) || '').toLowerCase();
+  const pay = String((o && o.payment_status) || '').toLowerCase();
+  if (st === 'cancelled' || st === 'cancel') return 'cancelled';
+  if (st === 'shipped') return 'shipped';
+  if (st === 'delivered' || st === 'completed' || st === 'done') return 'done';
+  if (pay === 'pending_bill' || pay === 'pending') return 'unpaid';
+  return 'toShip';
+}
 
-  if (!Store.orders.length) {
-    html += '<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><p>' + t('noOrders') + '</p><p class="empty-hint">' + t('noOrdersHint') + '</p></div>';
-    return html;
-  }
-
+function orderStatusBadge(order) {
   const statusMap = {
     pending: { label: t('stPending'), color: '#f59e0b', bg: '#f59e0b15' },
     confirmed: { label: t('stConfirmed'), color: '#17b268', bg: '#17b26815' },
@@ -2103,49 +2281,80 @@ function renderOrders() {
     done: { label: t('stDone'), color: '#22c55e', bg: '#22c55e15' },
     cancel: { label: t('stCancel'), color: '#8c919d', bg: '#8c919d15' }
   };
+  if (order.payment_status === 'pending_bill') {
+    const deadline = order.bill_deadline ? new Date(order.bill_deadline) : null;
+    const expired = deadline && deadline < new Date();
+    return expired
+      ? { label: t('billTimeout'), color: '#ef4444', bg: '#ef444415' }
+      : { label: t('payPendingBill'), color: '#f59e0b', bg: '#f59e0b15' };
+  }
+  if (order.payment_status === 'pending') {
+    return { label: t('payPending'), color: '#5b9df0', bg: '#5b9df015' };
+  }
+  if (order.payment_status === 'paid') {
+    return statusMap[order.status] || { label: t('payPaid'), color: '#22c55e', bg: '#22c55e15' };
+  }
+  return statusMap[order.status] || statusMap.pending;
+}
 
-  Store.orders.forEach(order => {
-    // Determine display status based on payment_status
-    let st;
-    if (order.payment_status === 'pending_bill') {
-      const deadline = order.bill_deadline ? new Date(order.bill_deadline) : null;
-      const expired = deadline && deadline < new Date();
-      st = expired
-        ? { label: t('billTimeout'), color: '#ef4444', bg: '#ef444415' }
-        : { label: t('payPendingBill'), color: '#f59e0b', bg: '#f59e0b15' };
-    } else if (order.payment_status === 'pending') {
-      st = { label: t('payPending'), color: '#5b9df0', bg: '#5b9df015' };
-    } else if (order.payment_status === 'paid') {
-      st = statusMap[order.status] || { label: t('payPaid'), color: '#22c55e', bg: '#22c55e15' };
-    } else {
-      st = statusMap[order.status] || statusMap.pending;
+function renderOrderCard(order) {
+  const st = orderStatusBadge(order);
+  const needsAddr = (order.pickup_method === 'motoboy' || order.pickup_method === 'correios') && !order.shipping_address && (order.status === 'pending' || order.status === 'picking');
+  const needsOnibus = order.pickup_method === 'onibus' && !order.onibus_schedule_img && (order.status === 'pending' || order.status === 'picking');
+  const items = Store.orderItems.filter(i => i.order_id === order.id);
+  let html = '<div class="order-card" data-oid="' + esc(String(order.id)) + '" onclick="event.stopPropagation();openOrderDetail(this.getAttribute(\'data-oid\'))" style="margin-bottom:.75rem;user-select:none;-webkit-user-select:none">';
+  html += '<div class="order-card-hdr"><span class="order-no">' + esc(order.order_no) + '</span><div style="display:flex;align-items:center;gap:.4rem">' + (needsAddr ? '<span style="font-size:.65rem;color:var(--orange);font-weight:500">' + t('warnMissingAddr') + '</span>' : '') + (needsOnibus ? '<span style="font-size:.65rem;color:var(--orange);font-weight:500">' + t('warnMissingSchedule') + '</span>' : '') + '<span class="order-status" style="background:' + st.bg + ';color:' + st.color + '">' + st.label + '</span></div></div>';
+  html += '<div class="order-items-preview">';
+  items.slice(0, 4).forEach(item => {
+    html += '<div class="order-item-thumb">';
+    if (item.product_image) html += '<img src="' + esc(item.product_image) + '">';
+    else html += '<span class="prod-emoji">📦</span>';
+    html += '</div>';
+  });
+  if (items.length > 4) html += '<div class="order-item-more">+' + (items.length - 4) + '</div>';
+  html += '</div>';
+  html += '<div class="order-card-ftr"><span class="order-total">' + t('orderTotal') + ' <span>¥' + fmtPrice(order.total) + '</span></span><span class="order-date">' + fmtDate(order.created_at) + '</span></div>';
+  html += '</div>';
+  return html;
+}
+
+function renderOrders() {
+  let html = '<div class="sec-title"><div class="sec-dot"></div>' + t('myOrders') + '</div>';
+
+  const SECTIONS = [
+    { k: 'unpaid', label: t('tabUnpaid') },
+    { k: 'toShip', label: t('tabToShip') },
+    { k: 'shipped', label: t('tabShipped') },
+    { k: 'done', label: t('tabDone') },
+    { k: 'cancelled', label: t('tabCancelled') }
+  ];
+
+  const all = (Store.orders || []).filter(o => !orderSection || orderTabOf(o) === orderSection);
+  if (!all.length) {
+    html += '<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><p>' + t('noOrders') + '</p><p class="empty-hint">' + t('noOrdersHint') + '</p></div>';
+    return html;
+  }
+
+  const secList = orderSection ? SECTIONS.filter(x => x.k === orderSection) : SECTIONS;
+  secList.forEach(sec => {
+    const list = all.filter(o => orderTabOf(o) === sec.k);
+    html += '<div class="sec-title" style="margin:1.15rem 0 .65rem;font-size:.92rem"><div class="sec-dot"></div>' + esc(sec.label)
+      + ' <span style="margin-left:.35rem;font-size:.75rem;color:var(--txt3)">(' + list.length + ')</span></div>';
+    if (!list.length) {
+      html += '<div class="empty-hint" style="padding:.55rem .85rem;background:var(--bg2);border-radius:var(--r);color:var(--txt3);font-size:.78rem">' + t('noOrders') + '</div>';
+      return;
     }
-    // Check if needs info
-    const needsAddr = (order.pickup_method === 'motoboy' || order.pickup_method === 'correios') && !order.shipping_address && (order.status === 'pending' || order.status === 'picking');
-    const needsOnibus = order.pickup_method === 'onibus' && !order.onibus_schedule_img && (order.status === 'pending' || order.status === 'picking');
-    const items = Store.orderItems.filter(i => i.order_id === order.id);
-    html += '<div class="order-card" onclick="openOrderDetail(' + order.id + ')">';
-    html += '<div class="order-card-hdr"><span class="order-no">' + esc(order.order_no) + '</span><div style="display:flex;align-items:center;gap:.4rem">' + (needsAddr ? '<span style="font-size:.65rem;color:var(--orange);font-weight:500">' + t('warnMissingAddr') + '</span>' : '') + (needsOnibus ? '<span style="font-size:.65rem;color:var(--orange);font-weight:500">' + t('warnMissingSchedule') + '</span>' : '') + '<span class="order-status" style="background:' + st.bg + ';color:' + st.color + '">' + st.label + '</span></span></div>';
-    html += '<div class="order-items-preview">';
-    items.slice(0, 4).forEach(item => {
-      html += '<div class="order-item-thumb">';
-      if (item.product_image) html += '<img src="' + esc(item.product_image) + '">';
-      else html += '<span class="prod-emoji">📦</span>';
-      html += '</div>';
-    });
-    if (items.length > 4) html += '<div class="order-item-more">+' + (items.length - 4) + '</div>';
-    html += '</div>';
-    html += '<div class="order-card-ftr"><span class="order-total">' + t('orderTotal') + ' <span>¥' + fmtPrice(order.total) + '</span></span><span class="order-date">' + fmtDate(order.created_at) + '</span></div>';
-    html += '</div>';
+    list.forEach(order => { html += renderOrderCard(order); });
   });
 
   return html;
 }
 
 function openOrderDetail(orderId) {
-  const order = Store.orders.find(o => o.id === orderId);
+  const id = Number(orderId);
+  const order = Store.orders.find(o => Number(o.id) === id);
   if (!order) return;
-  const items = Store.orderItems.filter(i => i.order_id === orderId);
+  const items = Store.orderItems.filter(i => Number(i.order_id) === id);
 
   const statusMap = {
     pending: t('stPending'), confirmed: t('stConfirmed'), picking: t('stPicking'),
@@ -2270,6 +2479,10 @@ function openOrderDetail(orderId) {
 
   html += '</div>';
 
+  if (order.status === 'pending' || order.status === 'confirmed') {
+    html += '<div style="padding:0 1.2rem 1.2rem"><button class="btn-add-cart" style="width:100%;background:#ef444420;border:1.5px solid #ef444460;color:#ef4444" onclick="cancelShopOrder(' + order.id + ')">' + t('cancelOrder') + '</button></div>';
+  }
+
   $('orderDetailModal').innerHTML = html;
   $('orderDetailModal').style.display = 'block';
 }
@@ -2278,8 +2491,41 @@ function closeOrderDetail() {
   $('orderDetailModal').style.display = 'none';
 }
 
+async function cancelShopOrder(orderId) {
+  const id = Number(orderId);
+  const order = (Store.orders || []).find(o => Number(o.id) === id);
+  if (!order) return;
+  if (order.status !== 'pending' && order.status !== 'confirmed') {
+    toast(t('cannotCancel') || 'cannot cancel', 'error');
+    return;
+  }
+  if (!confirm(t('cancelOrderConfirm') || 'Cancel this order?')) return;
+  try {
+    const items = (Store.orderItems || []).filter(i => Number(i.order_id) === id);
+    for (const it of items) {
+      const p = Store.products.find(x => x.id === it.product_id);
+      const qty = Number(it.qty || it.quantity || 0);
+      if (p && qty) {
+        const addStock = Number(p.stock || 0) + qty;
+        const addSales = Math.max(0, Number(p.sales || 0) - qty);
+        try { await sb.from('products').update({ stock: addStock, sales: addSales }).eq('id', p.id); } catch (_) {}
+        p.stock = addStock;
+        p.sales = addSales;
+      }
+    }
+    await sb.from('shop_orders').update({ status: 'cancelled' }).eq('id', orderId);
+    order.status = 'cancelled';
+    toast(t('orderCancelled') || t('stCancelled') || 'Cancelled', 'success');
+    await loadMemberOrders();
+    openOrderDetail(orderId);
+    renderPage();
+  } catch (e) {
+    toast(t('uploadFailed') + (e.message || e), 'error');
+  }
+}
+
 // Edit order address
-let onibusUpImgData = '';
+var onibusUpImgData = '';
 async function editOrderAddr(orderId) {
   const addr = prompt(t('addrEnter'));
   if (!addr || !addr.trim()) return;
@@ -2322,7 +2568,7 @@ async function uploadOnibusImg(orderId) {
 }
 
 // Bill upload
-let billImgData = '';
+var billImgData = '';
 async function uploadBillImage(orderId) {
   if (!billImgData) { toast(t('selectBillFirst'), 'error'); return; }
   try {
@@ -2429,8 +2675,9 @@ function startVerifyCountdown() {
 }
 
 async function sendVerifyCode(email) {
-  const { error } = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: false } });
-  if (error) throw new Error(t('verifyCodeError') + error.message);
+  // 注册/重置需对新邮箱发码，允许创建 Auth 用户；唯一性由 member_register / member_reset_password 校验
+  const { error } = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } });
+  if (error) throw new Error(t('verifyCodeError') + (error.error_description || error.message || error.error_code || 'otp_failed'));
 }
 
 async function resendCode() {
@@ -2476,16 +2723,7 @@ async function doRegister() {
   if (!pwd || pwd.length < 6) { errEl.textContent = t('pwdMin6'); errEl.classList.add('show'); return; }
   if (pwd !== pwd2) { errEl.textContent = t('pwdMismatch'); errEl.classList.add('show'); return; }
 
-  // 检查邮箱是否已注册
-  try {
-    const existing = (await safeQ(sb.from('customers').select('id').eq('email', email).limit(1))).data;
-    if (existing && existing.length) { errEl.textContent = t('emailRegistered'); errEl.classList.add('show'); return; }
-  } catch(e) {}
-  // 检查用户名是否已存在
-  try {
-    const existingUser = (await safeQ(sb.from('customers').select('id').eq('username', username).limit(1))).data;
-    if (existingUser && existingUser.length) { errEl.textContent = t('usernameTaken'); errEl.classList.add('show'); return; }
-  } catch(e) {}
+  // 唯一性由 member_register 校验（customers 对匿名已收权，前端不直查）
 
   try {
     errEl.classList.remove('show');
@@ -2541,11 +2779,7 @@ async function doResetRequest() {
   const errEl = $('authError');
   const email = ($('resetEmail') || {}).value.trim();
   if (!email) { errEl.textContent = t('enterResetEmail'); errEl.classList.add('show'); return; }
-  // 检查邮箱是否存在
-  try {
-    const existing = (await safeQ(sb.from('customers').select('id').eq('email', email).limit(1))).data;
-    if (!existing || !existing.length) { errEl.textContent = t('emailNotRegistered'); errEl.classList.add('show'); return; }
-  } catch(e) {}
+  // 不直查 customers；发码后由 member_reset_password 判断是否已注册
   try {
     errEl.classList.remove('show');
     pendingResetEmail = email;
@@ -2655,10 +2889,7 @@ async function confirmEditUsername() {
   const newUsername = ($('editNewUsername') || {}).value.trim();
   if (!newUsername) { errEl.textContent = t('enterNewUsername'); errEl.classList.add('show'); return; }
   try {
-    const existingUser = (await safeQ(sb.from('customers').select('id').eq('username', newUsername).limit(1))).data;
-    if (existingUser && existingUser.length && existingUser[0].id !== Store.member.id) {
-      errEl.textContent = t('usernameTaken'); errEl.classList.add('show'); return;
-    }
+    // 用户名唯一性由 member_update_profile 校验
     await sb.rpc('member_update_profile', { p_id: Store.member.id, p_username: newUsername, p_name: null, p_nickname: null, p_email: null, p_phone: null, p_moto_address: null, p_correio_address: null });
     Store.member.username = newUsername;
     Store.member.username_changed_at = new Date().toISOString();
@@ -2681,9 +2912,7 @@ async function sendEditEmailCode() {
   const errEl = $('editProfileError');
   const newEmail = ($('editNewEmail') || {}).value.trim();
   if (!newEmail) { errEl.textContent = t('enterNewEmail'); errEl.classList.add('show'); return; }
-  // 检查是否已存在
-  const existing = (await safeQ(sb.from('customers').select('id').eq('email', newEmail).limit(1))).data;
-  if (existing && existing.length) { errEl.textContent = t('emailAlreadyUsed'); errEl.classList.add('show'); return; }
+  // 邮箱唯一性由后端校验
   try {
     errEl.classList.remove('show');
     await sendVerifyCode(newEmail);
@@ -2716,9 +2945,7 @@ async function confirmEditPhone() {
   const errEl = $('editProfileError');
   const newPhone = ($('editNewPhone') || {}).value.trim();
   if (!newPhone) { errEl.textContent = t('enterNewPhone'); errEl.classList.add('show'); return; }
-  // 检查是否已存在
-  const existing = (await safeQ(sb.from('customers').select('id').eq('phone', newPhone).limit(1))).data;
-  if (existing && existing.length) { errEl.textContent = t('phoneAlreadyUsed'); errEl.classList.add('show'); return; }
+  // 手机号唯一性由后端校验
   try {
     await sb.rpc('member_update_profile', { p_id: Store.member.id, p_phone: newPhone, p_name: null, p_nickname: null, p_email: null, p_username: null, p_moto_address: null, p_correio_address: null });
     Store.member.phone = newPhone;
