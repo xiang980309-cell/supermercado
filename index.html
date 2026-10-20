@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
-/* ==================== RESET & THEME ==================== */
+/* ==================== 重置与主题 ==================== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f7f8fb;--bg2:#ffffff;--bg3:#f0f2f7;--bg4:#e8ebf2;
@@ -30,7 +30,7 @@ img{max-width:100%;display:block}
 a{text-decoration:none;color:inherit}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-/* ==================== LAYOUT ==================== */
+/* ==================== 布局 ==================== */
 .app{min-height:100vh;display:flex;flex-direction:column}
 
 /* HEADER */
@@ -98,7 +98,7 @@ a{text-decoration:none;color:inherit}
 
 .bnav-item .bnav-badge{position:absolute;top:0;right:4px;min-width:16px;height:16px;background:var(--red);color:#fff;border-radius:8px;font-size:.55rem;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
-/* ==================== PAGES ==================== */
+/* ==================== 页面样式 ==================== */
 .page{display:none;animation:fadeUp .3s ease}
 .page.show{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -141,7 +141,7 @@ a{text-decoration:none;color:inherit}
 .subcat-card .sc-count{font-size:.65rem;color:var(--txt3);font-family:'DM Mono',monospace}
 .subcat-card .sc-arrow{font-size:.7rem;color:var(--txt4);margin-top:.2rem}
 
-/* CATEGORY TREE MENU */
+/* 分类树 MENU */
 .cat-tree{margin-bottom:1.2rem}
 .cat-tree-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr);margin-bottom:.3rem}
 .cat-tree-item:hover{border-color:var(--ac);background:var(--ac3)}
@@ -196,7 +196,7 @@ a{text-decoration:none;color:inherit}
 .empty-state p{font-size:.9rem}
 .empty-state .empty-hint{font-size:.75rem;margin-top:.3rem}
 
-/* ==================== PRODUCT DETAIL MODAL ==================== */
+/* ==================== 商品详情弹窗 ==================== */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(4px);z-index:300;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex;animation:fadeIn .2s ease}
 .modal-sheet{background:var(--bg2);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;animation:slideUp .3s ease}
@@ -211,7 +211,7 @@ a{text-decoration:none;color:inherit}
 .modal-close:hover{background:rgba(0,0,0,.1)}
 .modal-close svg{width:18px;height:18px;color:var(--txt2)}
 
-/* DETAIL LAYOUT */
+/* DETAIL 布局 */
 .detail-img{width:100%;aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative}
 .detail-img img{width:100%;height:100%;object-fit:cover}
 .detail-img .prod-emoji{font-size:5rem;opacity:.5}
@@ -254,7 +254,7 @@ a{text-decoration:none;color:inherit}
 .btn-buy-now{flex:1;padding:.75rem;background:var(--txt);color:#fff;border-radius:var(--r);font-weight:600;font-size:.9rem;cursor:pointer;transition:all var(--tr);display:flex;align-items:center;justify-content:center;gap:.4rem}
 .btn-buy-now:hover{background:#2a2d36}
 
-/* ==================== CART PAGE ==================== */
+/* ==================== 购物车页面 ==================== */
 .cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 1rem;color:var(--txt3)}
 .cart-empty svg{width:64px;height:64px;opacity:.2;margin-bottom:1rem}
 .cart-empty p{font-size:.95rem;margin-bottom:.3rem}
@@ -290,7 +290,7 @@ a{text-decoration:none;color:inherit}
 .cart-checkout-btn:hover{background:var(--ac2);box-shadow:0 4px 14px rgba(79,110,247,.3)}
 .cart-checkout-btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* ==================== USER PAGES ==================== */
+/* ==================== 用户页面 ==================== */
 .auth-page{max-width:420px;margin:2rem auto}
 .auth-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:2rem 1.6rem;box-shadow:var(--shadow)}
 .auth-title{font-size:1.3rem;font-weight:700;text-align:center;margin-bottom:.3rem}
@@ -310,7 +310,7 @@ a{text-decoration:none;color:inherit}
 .auth-switch{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--txt3)}
 .auth-switch a{color:var(--ac);cursor:pointer;font-weight:500}
 
-/* USER CENTER */
+/* 用户中心 */
 .uc-header{background:linear-gradient(135deg,#2ee08c,#17b268);border-radius:var(--r3);padding:1.8rem;color:#fff;margin-bottom:1.2rem;position:relative;overflow:hidden}
 .uc-header::after{content:'';position:absolute;right:-30px;top:-30px;width:150px;height:150px;background:rgba(255,255,255,.1);border-radius:50%}
 .uc-user-row{display:flex;align-items:center;gap:1rem;position:relative;z-index:1}
@@ -336,7 +336,7 @@ a{text-decoration:none;color:inherit}
 .uc-logout{width:100%;padding:.75rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--red);font-weight:500;font-size:.88rem;cursor:pointer;transition:all var(--tr);text-align:center}
 .uc-logout:hover{background:var(--red2);border-color:rgba(239,68,68,.2)}
 
-/* ==================== ORDERS PAGE ==================== */
+/* ==================== 订单页面 ==================== */
 .order-tabs{display:flex;gap:.3rem;margin-bottom:1rem;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .order-tabs::-webkit-scrollbar{display:none}
 .order-tab{padding:.45rem .85rem;border-radius:20px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all var(--tr);white-space:nowrap;color:var(--txt3);background:var(--bg2);border:1px solid var(--border)}
@@ -379,7 +379,7 @@ a{text-decoration:none;color:inherit}
 .level-bar-fill{height:100%;background:#fff;border-radius:3px;transition:width .5s ease}
 .level-info{display:flex;justify-content:space-between;margin-top:.3rem;font-size:.65rem;opacity:.7}
 
-/* ==================== TOAST ==================== */
+/* ==================== 消息提示 ==================== */
 .toast-container{position:fixed;top:.8rem;right:.8rem;z-index:999;display:flex;flex-direction:column;gap:.35rem}
 .toast{padding:.6rem 1rem;border-radius:var(--r);font-size:.8rem;display:flex;align-items:center;gap:.4rem;min-width:200px;box-shadow:var(--shadow3);animation:toastIn .3s ease both}
 @keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
@@ -388,12 +388,12 @@ a{text-decoration:none;color:inherit}
 .toast.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .toast svg{width:16px;height:16px;flex-shrink:0}
 
-/* ==================== SPINNER ==================== */
+/* ==================== 加载动画 ==================== */
 .spinner{display:flex;align-items:center;justify-content:center;padding:3rem}
 .spinner::after{content:'';width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--ac);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ==================== RESPONSIVE ==================== */
+/* ==================== 响应式 ==================== */
 @media(max-width:768px){
   html{font-size:14px}
   .hdr-inner{padding:.6rem .8rem}
@@ -427,7 +427,7 @@ a{text-decoration:none;color:inherit}
   .hdr-inner{padding:.7rem 0}
 }
 
-/* === PHASE 5: PRODUCT DETAIL === */
+/* === PHASE 5: 商品详情 === */
 .detail-img{border-radius:var(--r2);overflow:hidden}
 .detail-img::after{content:'';position:absolute;inset:0;background:center/56px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23b0b4bf' stroke-width='1.6' viewBox='0 0 24 24'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpath d='M21 15l-5-5L5 21'/%3E%3C/svg%3E");opacity:.5}
 .detail-img img{position:relative;z-index:1}
@@ -446,7 +446,7 @@ a{text-decoration:none;color:inherit}
 .btn-buy-now{flex:1;height:48px;border-radius:12px;border:none;background:var(--ac);color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;transition:all var(--tr)}
 .btn-buy-now:hover{filter:brightness(1.05);box-shadow:0 6px 20px var(--ac3)}
 @media(max-width:600px){.action-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(16px)}}
-/* === PHASE 9: CUSTOMER PAGES === */
+/* === PHASE 9: CUSTOMER 页面样式 === */
 .empty-state::before,.cart-empty::before{content:'';display:block;width:52px;height:52px;margin:0 auto .9rem;background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b0b4bf' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-6l-2 3h-4l-2-3H2'/%3E%3Cpath d='M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z'/%3E%3C/svg%3E");opacity:.9}
 
 /* === PHASE 10: MOBILE POLISH === */
@@ -698,10 +698,10 @@ input[id^="lp_"]{
 </div><!-- /shop-main -->
 </div><!-- /shop-wrap -->
 
-<!-- TOAST CONTAINER -->
+<!-- 消息提示 CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- PRODUCT DETAIL MODAL -->
+<!-- 商品详情弹窗 -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-sheet" id="detailContent"></div>
 </div>
@@ -710,7 +710,7 @@ input[id^="lp_"]{
 <div class="modal-full" id="orderDetailModal" style="display:none"></div>
 
 <script>
-// ==================== GLOBAL ERROR CAPTURE ====================
+// ==================== 全局错误捕获 ====================
 window._errLog = window._errLog || [];
 window.addEventListener('error', function(e) {
   window._errLog.push({ t: Date.now(), msg: e.message || String(e.error), loc: (e.filename||'')+':'+(e.lineno||0), type: 'error' });
@@ -723,13 +723,13 @@ window.addEventListener('unhandledrejection', function(e) {
   console.error('[CS Unhandled]', e.reason);
 });
 
-// ==================== SUPABASE CONFIG ====================
+// ==================== Supabase 配置 ====================
 const SB_URL = 'https://qpynlblzpmkoovyaxygn.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFweW5sYmx6cG1rb292eWF4eWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMzE4MzIsImV4cCI6MjEwNDkwNzgzMn0.kXn9UjxNYTVZ85kFEdlxIgH5Mw7nESUI9uz37nDrvJ8';
 let sb = null;
 try { sb = supabase.createClient(SB_URL, SB_KEY); } catch(e) { console.error('SB init failed', e); }
 
-// ==================== i18n 双语系统 ====================
+// ==================== i18n 双语 ====================
 let curLang = localStorage.getItem('cs-portal-lang') || 'zh';
 const i18n = {
   zh: {
@@ -997,7 +997,7 @@ if (window.location.protocol === 'file:') {
   });
 }
 
-// ==================== DATA STORE ====================
+// ==================== 数据仓库 ====================
 const Store = {
   categories: [],
   products: [],
@@ -1011,7 +1011,7 @@ const Store = {
   addresses: [],
 };
 
-// ==================== HELPERS ====================
+// ==================== 工具函数 ====================
 function $(id) { return document.getElementById(id); }
 function safeQ(p) {
   return Promise.resolve(p).then(r => ({ data: (r && r.data) || [], error: (r && r.error) || null }))
@@ -1154,7 +1154,7 @@ function saveMember() {
 // Passwords are verified server-side via member_login RPC (bcrypt). Never store or compare plaintext here.
 function hashPwd(pwd) { return pwd; }
 
-// ==================== DATA LOADING ====================
+// ==================== 数据加载 ====================
 async function fetchPaged(build) {
   const PAGE = 1000; const out = [];
   for (let from = 0; ; from += PAGE) {
@@ -1223,7 +1223,7 @@ async function loadMemberOrders() {
   }
 }
 
-// ==================== PRICE LOGIC ====================
+// ==================== 价格逻辑 ====================
 function getProductPrice(product) {
   if (!Store.member || !Store.member.member_level) return product.price;
   const lp = Store.levelPrices.find(x => x.product_id === product.id && x.level_id === Store.member.member_level);
@@ -1251,7 +1251,7 @@ function getLevelPrices(product) {
   });
 }
 
-// ==================== CATEGORY HELPERS ====================
+// ==================== 分类工具 ====================
 function getCatById(id) { return Store.categories.find(c => c.id === id); }
 function getProductCats(product) {
   return (product.catIds || []).map(id => getCatById(id)).filter(Boolean);
@@ -1259,7 +1259,7 @@ function getProductCats(product) {
 
 const CAT_COLORS = ['#17b268','#7c5bf0','#22c55e','#f59e0b','#ec4899','#06b6d4','#f97316','#8b5cf6'];
 
-// ==================== CATEGORY TREE ====================
+// ==================== 分类树 ====================
 // Build parent->children map
 function getChildren(parentId) {
   return Store.categories.filter(c => c.parent_id === parentId && c.visible).sort((a, b) => a.order - b.order);
@@ -1348,7 +1348,7 @@ function renderCatTreeNode(cat, currentCatId, depth) {
   return html;
 }
 
-// ==================== AUTH =====================
+// ==================== 认证
 async function registerMember(email, phone, password, name, username) {
   return sb.rpc('member_register', {
     p_email: email || '',
@@ -1395,12 +1395,12 @@ function logoutMember() {
   toast(t('loggedOut'), 'info');
 }
 
-// ==================== NAVIGATION ====================
+// ==================== 页面导航 ====================
 let currentPage = 'home';
 let searchQuery = '';
 
 
-// ==================== SHOP SIDEBAR NAV ====================
+// ==================== 商城侧边栏 ====================
 var homeLabel = '';
 var orderSection = ''; // '' = all sections; unpaid|toShip|shipped|done|cancelled
 
@@ -1524,7 +1524,7 @@ function renderUserArea() {
   }
 }
 
-// ==================== SEARCH ====================
+// ==================== 搜索 ====================
 let searchTimer = null;
 function handleSearch(val) {
   clearTimeout(searchTimer);
@@ -1534,7 +1534,7 @@ function handleSearch(val) {
   }, 300);
 }
 
-// ==================== HOME PAGE ====================
+// ==================== 首页 ====================
 function renderHome() {
   let html = '';
 
@@ -1691,7 +1691,7 @@ function renderHome() {
 
 
 
-// ==================== PRODUCT DETAIL ====================
+// ==================== 商品详情 ====================
 function openDetail(productId) {
   const p = Store.products.find(x => x.id === productId);
   if (!p) return;
@@ -1816,7 +1816,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeDetail(); $('orderDetailModal').style.display = 'none'; }
 });
 
-// ==================== SIZE & SPEC ====================
+// ==================== 规格尺码 ====================
 function selectSize(size, stock) {
   if (stock <= 0) return;
   selectedSize = size;
@@ -1843,7 +1843,7 @@ function selectSpec(spec) {
   }
 }
 
-// ==================== CART ====================
+// ==================== 购物车
 function addToCart(productId, qty, size, specType) {
   qty = qty || 1;
   size = size || null;
@@ -1986,7 +1986,7 @@ function getSelectedShipMethod() {
   return el ? el.value : 'motoboy';
 }
 
-// ==================== PAYMENT ACCOUNTS ====================
+// ==================== 收款账号 ====================
 let paymentAccounts = {};
 
 async function loadPaymentAccounts() {
@@ -2102,7 +2102,7 @@ function gotoLogin() {
   navigate('user');
 }
 
-// ==================== CHECKOUT ====================
+// ==================== 结算
 async function goCheckout() {
   if (!Store.member) { afterLoginPage = 'checkout'; showLoginPrompt(); return; }
   if (Store.cart.length === 0) return;
@@ -2183,7 +2183,7 @@ async function goCheckout() {
   }
 }
 
-// ==================== CHECKOUT PAGE ====================
+// ==================== 结算页面 ====================
 function renderCheckout() {
   let html = '<div class="sec-title"><div class="sec-dot"></div>' + t('checkoutTitle') + '</div>';
   html += '<div class="go-shop" style="display:inline-block;margin-bottom:.8rem" onclick="navigate(\'cart\')">&larr; ' + t('backToCart') + '</div>';
@@ -2256,7 +2256,7 @@ function renderCheckout() {
   return html;
 }
 
-// ==================== ORDERS PAGE ====================
+// ==================== 订单页面 ====================
 function orderTabOf(o) {
   const st = String((o && o.status) || '').toLowerCase();
   const pay = String((o && o.payment_status) || '').toLowerCase();
@@ -2588,7 +2588,7 @@ async function uploadBillImage(orderId) {
   }
 }
 
-// ==================== AUTH PAGE ====================
+// ==================== 登录注册 ====================
 let selectedSize = null;
 let selectedSpec = 'piece';
 let authMode = 'login'; // login | register | verify | reset | resetVerify
@@ -2777,7 +2777,7 @@ async function doVerify() {
   }
 }
 
-// ==================== FORGOT PASSWORD ====================
+// ==================== 忘记密码 ====================
 async function doResetRequest() {
   const errEl = $('authError');
   const email = ($('resetEmail') || {}).value.trim();
@@ -2847,7 +2847,7 @@ async function resendResetCode() {
   } catch(e) { toast(e.message, 'error'); }
 }
 
-// ==================== EDIT PROFILE ====================
+// ==================== 资料编辑 ====================
 let editMode = null; // null | 'email' | 'phone'
 
 function openEditProfile(mode) {
@@ -2969,7 +2969,7 @@ async function confirmEditPhone() {
   } catch(e) { errEl.textContent = e.message; errEl.classList.add('show'); }
 }
 
-// ==================== USER CENTER ====================
+// ==================== 用户中心 ====================
 function renderUserCenter() {
   const m = Store.member;
   const level = Store.levels.find(l => l.id === m.member_level) || Store.levels[0];
