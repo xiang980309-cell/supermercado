@@ -1111,12 +1111,21 @@ function updateCartBadge() {
 
 function loadMember() {
   try {
-    const m = JSON.parse(localStorage.getItem('cs_member') || 'null');
-    if (m && typeof m === 'object') {
+    const raw = JSON.parse(localStorage.getItem('cs_member') || 'null');
+    if (raw && typeof raw === 'object') {
+      // P2-6: 会员数据 7 天过期
+      if (raw._exp && Date.now() > raw._exp) {
+        localStorage.removeItem('cs_member');
+        Store.member = null;
+        return;
+      }
+      const m = raw.d || raw;  // 兼容旧格式
       delete m.password;
       delete m.p;
+      Store.member = m;
+    } else {
+      Store.member = null;
     }
-    Store.member = m;
   } catch(e) { Store.member = null; }
 }
 function saveMember() {
@@ -1124,7 +1133,8 @@ function saveMember() {
     const safe = Object.assign({}, Store.member);
     delete safe.password;
     delete safe.p;
-    localStorage.setItem('cs_member', JSON.stringify(safe));
+    // P2-6: 包装带过期时间（7 天）
+    localStorage.setItem('cs_member', JSON.stringify({ _exp: Date.now() + 7 * 24 * 3600 * 1000, d: safe }));
   } else localStorage.removeItem('cs_member');
 }
 
