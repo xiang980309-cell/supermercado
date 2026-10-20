@@ -710,6 +710,19 @@ input[id^="lp_"]{
 <div class="modal-full" id="orderDetailModal" style="display:none"></div>
 
 <script>
+// ==================== GLOBAL ERROR CAPTURE ====================
+window._errLog = window._errLog || [];
+window.addEventListener('error', function(e) {
+  window._errLog.push({ t: Date.now(), msg: e.message || String(e.error), loc: (e.filename||'')+':'+(e.lineno||0), type: 'error' });
+  if (window._errLog.length > 50) window._errLog.shift();
+  console.error('[CS GlobalError]', e.message, e.filename);
+});
+window.addEventListener('unhandledrejection', function(e) {
+  window._errLog.push({ t: Date.now(), msg: String((e.reason&&e.reason.message)||e.reason), type: 'unhandled' });
+  if (window._errLog.length > 50) window._errLog.shift();
+  console.error('[CS Unhandled]', e.reason);
+});
+
 // ==================== SUPABASE CONFIG ====================
 const SB_URL = 'https://qpynlblzpmkoovyaxygn.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFweW5sYmx6cG1rb292eWF4eWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzMzE4MzIsImV4cCI6MjEwNDkwNzgzMn0.kXn9UjxNYTVZ85kFEdlxIgH5Mw7nESUI9uz37nDrvJ8';
