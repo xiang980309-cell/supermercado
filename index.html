@@ -2676,7 +2676,7 @@ function startVerifyCountdown() {
 
 async function sendVerifyCode(email) {
   // 注册/重置需对新邮箱发码，允许创建 Auth 用户；唯一性由 member_register / member_reset_password 校验
-  const { error } = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } });
+  const { error } = await sb.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true, emailRedirectTo: (window.location && window.location.origin) ? window.location.origin + '/' : 'https://client.shawntostore.com/' } });
   if (error) throw new Error(t('verifyCodeError') + (error.error_description || error.message || error.error_code || 'otp_failed'));
 }
 
