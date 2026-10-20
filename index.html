@@ -789,7 +789,7 @@ const i18n = {
     emailOrPhone:'邮箱 / 手机号',enterEmailOrPhone:'输入邮箱或手机号',
     enterPwd:'输入密码',forgotPwd:'忘记密码？',
     noAccount:'还没有账号？',goRegister:'去注册',
-    registerEmail:'注册邮箱',resetCodeHint:'我们将向此邮箱发送验证码',sendCode:'发送验证码',
+    registerEmail:'注册邮箱',resetCodeHint:'邮件含 6 位验证码；也可直接点邮件里的链接完成验证',sendCode:'发送验证码',
     backToLogin:'← 返回登录',newPwd:'新密码',newPwdPH:'设置新密码（至少6位）',
     confirmNewPwd:'确认新密码',confirmNewPwdPH:'再次输入新密码',
     resetPwd:'重置密码',reEnterEmail:'← 重新输入邮箱',
@@ -798,7 +798,7 @@ const i18n = {
     enterEmail:'请填写邮箱，用于接收验证码',setUsername:'请设置用户名',
     pwdMin6:'密码至少6位',pwdMismatch:'两次密码不一致',
     emailRegistered:'该邮箱已注册，请直接登录',usernameTaken:'该用户名已被使用',
-    verifyCodeSentSuccess:'验证码已发送到您的邮箱',enter6Code:'请输入 6 位验证码',
+    verifyCodeSentSuccess:'验证码已发送到您的邮箱（含链接或 6 位码）',enter6Code:'请输入 6 位验证码，或点击邮件链接后再继续',
     regInfoLost:'注册信息丢失，请重新注册',verifyCodeError:'验证码错误或已过期',
     verifying:'验证中...',registerSuccess:'注册成功！欢迎加入',
     enterResetEmail:'请输入邮箱',emailNotRegistered:'该邮箱未注册',
@@ -906,7 +906,7 @@ const i18n = {
     emailOrPhone:'E-mail / Telefone',enterEmailOrPhone:'Digite e-mail ou telefone',
     enterPwd:'Digite a senha',forgotPwd:'Esqueceu a senha？',
     noAccount:'Não tem conta？',goRegister:'Cadastrar',
-    registerEmail:'E-mail cadastrado',resetCodeHint:'Enviaremos um código para este e-mail',sendCode:'Enviar Código',
+    registerEmail:'E-mail cadastrado',resetCodeHint:'O e-mail contém código de 6 dígitos; ou clique no link do e-mail',sendCode:'Enviar Código',
     backToLogin:'← Voltar ao login',newPwd:'Nova Senha',newPwdPH:'Mínimo 6 caracteres',
     confirmNewPwd:'Confirmar Nova Senha',confirmNewPwdPH:'Digite a senha novamente',
     resetPwd:'Redefinir Senha',reEnterEmail:'← Digitar e-mail novamente',
@@ -2083,57 +2083,28 @@ function gotoLogin() {
 async function goCheckout() {
   if (!Store.member) { afterLoginPage = 'checkout'; showLoginPrompt(); return; }
   if (Store.cart.length === 0) return;
+  if (window._checkoutBusy) return;
+  window._checkoutBusy = true;
+  const btn = document.querySelector('[onclick*="goCheckout"]');
+  if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
 
-  // Build order
   const total = getCartTotal();
-  const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth()+1).padStart(2,'0');
-    const dd = String(now.getDate()).padStart(2,'0');
-    const hh = String(now.getHours()).padStart(2,'0');
-    const mi = String(now.getMinutes()).padStart(2,'0');
-    const ss = String(now.getSeconds()).padStart(2,'0');
-    const uname = (Store.member.username || Store.member.nickname || Store.member.name || 'U').replace(/[^a-zA-Z0-9_-]/g,'');
-    const orderNo = yy + mm + dd + hh + mi + ss + uname;
-
   try {
-    // Insert order
     const selAddrEl = document.querySelector('input[name="shipAddr"]:checked');
     const defaultAddr = selAddrEl ? Store.addresses.find(a => String(a.id) === selAddrEl.value) : (Store.addresses.find(a => a.is_default) || Store.addresses[0]);
     const shipMethod = getSelectedShipMethod();
     const onibusName = shipMethod === 'onibus' ? (document.getElementById('onibusNameInput')?.value || '') : '';
     const onibusImg = shipMethod === 'onibus' ? onibusImgData : '';
 
-    // Validate onibus fields (name required, image optional at creation)
     if (shipMethod === 'onibus') {
       if (!onibusName.trim()) { toast(t('enterOnibusClientName'), 'error'); return; }
     }
-
-    const { data: order, error: oe } = await sb.from('shop_orders').insert({
-      order_no: orderNo,
-      customer_id: Store.member.id,
-      status: 'pending',
-      payment_status: 'pending_bill',
-      subtotal: total,
-      total: total,
-      original_total: total,
-      bill_deadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      pickup_method: shipMethod,
-      shipping_address: defaultAddr ? defaultAddr.address : '',
-      shipping_name: defaultAddr ? defaultAddr.recipient : Store.member.name,
-      shipping_phone: defaultAddr ? defaultAddr.phone : (Store.member.phone || ''),
-      source: 'client',
-      onibus_name: onibusName,
-      onibus_schedule_img: onibusImg
-    }).select().single();
-    if (oe) throw oe;
 
     const cartTotalQty = Store.cart.reduce((s, i) => s + i.qty, 0);
     const items = Store.cart.map(item => {
       const p = Store.products.find(x => x.id === item.productId);
       const price = getCartPrice(p, item.qty, cartTotalQty);
       return {
-        order_id: order.id,
         product_id: p.id,
         product_name: p.name,
         product_sku: p.sku || '',
@@ -2146,41 +2117,47 @@ async function goCheckout() {
         subtotal: price * item.qty
       };
     });
-    const { error: ie } = await sb.from('shop_order_items').insert(items);
-    if (ie) throw ie;
 
-    // Update stock + sales
-    for (const item of Store.cart) {
+    // 原子下单: 订单+明细+扣库存+会员统计+清购物车 一个事务
+    const { data: result, error: oe } = await sb.rpc('place_order', {
+      p_customer_id: Store.member.id,
+      p_order: {
+        pickup_method: shipMethod,
+        shipping_address: defaultAddr ? defaultAddr.address : '',
+        shipping_name: defaultAddr ? defaultAddr.recipient : Store.member.name,
+        shipping_phone: defaultAddr ? defaultAddr.phone : (Store.member.phone || ''),
+        onibus_name: onibusName,
+        onibus_schedule_img: onibusImg,
+        subtotal: total,
+        total: total,
+        original_total: total,
+        bill_deadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
+      },
+      p_items: items
+    });
+    if (oe) throw oe;
+    if (result && result.error) throw new Error(result.error);
+
+    // 同步本地缓存（place_order 已清服务端购物车）
+    Store.cart.forEach(item => {
       const p = Store.products.find(x => x.id === item.productId);
-      if (p) {
-        await sb.from('products').update({ stock: p.stock - item.qty, sales: (p.sales || 0) + item.qty }).eq('id', p.id);
-        p.stock -= item.qty;
-      }
-    }
-
-    // Update customer stats
-    const newTotal = (Number(Store.member.total_spent) || 0) + total;
-    const newCount = (Number(Store.member.order_count) || 0) + 1;
-    await sb.rpc('member_bump_order_stats', { p_id: Store.member.id, p_spent: total });
-    Store.member.total_spent = newTotal;
-    Store.member.order_count = newCount;
-
-    // Clear cart
+      if (p) { p.stock = Math.max(0, (Number(p.stock)||0) - item.qty); p.sales = (Number(p.sales)||0) + item.qty; }
+    });
+    Store.member.total_spent = (Number(Store.member.total_spent) || 0) + total;
+    Store.member.order_count = (Number(Store.member.order_count) || 0) + 1;
     Store.cart = [];
     saveCart();
-    if (Store.member) {
-      await sb.from('cart_items').delete().eq('customer_id', Store.member.id);
-    }
 
-    // Reload orders
     await loadMemberOrders();
-
     toast(t('orderSubmitted'), 'success');
     onibusImgData = '';
     navigate('orders');
   } catch(e) {
     console.error('Checkout error:', e);
     toast(t('orderFailed') + (e.message || t('retry')), 'error');
+  } finally {
+    window._checkoutBusy = false;
+    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
   }
 }
 
@@ -2501,19 +2478,23 @@ async function cancelShopOrder(orderId) {
   }
   if (!confirm(t('cancelOrderConfirm') || 'Cancel this order?')) return;
   try {
-    const items = (Store.orderItems || []).filter(i => Number(i.order_id) === id);
-    for (const it of items) {
+    // 原子取消: 回补库存 + 状态变更 一个事务（含幂等状态守卫）
+    const { data: result, error: ce } = await sb.rpc('cancel_shop_order', {
+      p_order_id: id,
+      p_customer_id: Store.member ? Store.member.id : null
+    });
+    if (ce) throw ce;
+    if (result && result.error) throw new Error(result.error);
+
+    // 同步本地缓存
+    (Store.orderItems || []).filter(i => Number(i.order_id) === id).forEach(it => {
       const p = Store.products.find(x => x.id === it.product_id);
       const qty = Number(it.qty || it.quantity || 0);
       if (p && qty) {
-        const addStock = Number(p.stock || 0) + qty;
-        const addSales = Math.max(0, Number(p.sales || 0) - qty);
-        try { await sb.from('products').update({ stock: addStock, sales: addSales }).eq('id', p.id); } catch (_) {}
-        p.stock = addStock;
-        p.sales = addSales;
+        p.stock = Number(p.stock || 0) + qty;
+        p.sales = Math.max(0, Number(p.sales || 0) - qty);
       }
-    }
-    await sb.from('shop_orders').update({ status: 'cancelled' }).eq('id', orderId);
+    });
     order.status = 'cancelled';
     toast(t('orderCancelled') || t('stCancelled') || 'Cancelled', 'success');
     await loadMemberOrders();
@@ -2798,16 +2779,26 @@ async function doResetConfirm() {
   const code = ($('resetCode') || {}).value.trim();
   const newPwd = ($('resetNewPwd') || {}).value;
   const newPwd2 = ($('resetNewPwd2') || {}).value;
-  if (!code || code.length !== 6) { errEl.textContent = t('enter6Code'); errEl.classList.add('show'); return; }
   if (!newPwd || newPwd.length < 6) { errEl.textContent = t('pwdMin6'); errEl.classList.add('show'); return; }
   if (newPwd !== newPwd2) { errEl.textContent = t('pwdMismatch'); errEl.classList.add('show'); return; }
   try {
     errEl.classList.remove('show');
     const btn = $('resetBtn');
     if (btn) { btn.textContent = t('resetting'); btn.disabled = true; }
-    // 验证 OTP
-    const { error } = await sb.auth.verifyOtp({ email: pendingResetEmail, token: code, type: 'email' });
-    if (error) throw new Error(t('verifyCodeError'));
+    // 1) 有 6 位码则校验；2) 或用户已点邮件链接（magic link）已有会话
+    if (code && code.length === 6) {
+      const { error } = await sb.auth.verifyOtp({ email: pendingResetEmail, token: code, type: 'email' });
+      if (error) throw new Error(t('verifyCodeError'));
+    } else {
+      const { data: sessData } = await sb.auth.getSession();
+      const hasSess = !!(sessData && sessData.session);
+      if (!hasSess) {
+        if (btn) { btn.textContent = t('resetSuccess') ? t('resetSuccess') : 'OK'; btn.disabled = false; }
+        errEl.textContent = t('enter6Code');
+        errEl.classList.add('show');
+        return;
+      }
+    }
     // 更新密码
     const rp = await sb.rpc('member_reset_password', { p_email: pendingResetEmail, p_new_password: newPwd });
     try { await sb.auth.signOut({ scope: 'local' }); } catch (_) {}
