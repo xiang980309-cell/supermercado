@@ -1164,7 +1164,7 @@ async function loadAllData() {
       return {
       id: p.id, name: p.name, sku: p.sku,
       catIds: Store.productCats.filter(x => x.product_id === p.id).map(x => x.category_id),
-      stock: st || 0, price: Number(p.price || 0), cost: Number(p.cost || 0),
+      stock: st || 0, price: Number(p.price || 0),
       img: p.image || '', note: p.note || '',
       desc: p.description || '', images: p.images || [],
       sales: p.sales || 0, tags: p.tags || [], featured: p.featured || false, label: p.label || '',
@@ -2113,7 +2113,6 @@ async function goCheckout() {
         price: price,
         original_price: price,
         level_price: price,
-        cost: p.cost || 0,
         subtotal: price * item.qty
       };
     });
