@@ -796,13 +796,13 @@ const i18n = {
     password:'密码',pwdPH:'设置密码（至少6位）',
     confirmPwd:'确认密码',confirmPwdPH:'再次输入密码',
     sendCodeAndRegister:'发送验证码并注册',alreadyHaveAccount:'已有账号？',goLogin:'去登录',
-    verifyCodeSent:'验证码已发送至',verifyCode:'6 位验证码',verifyCodePH:'000000',
+    verifyCodeSent:'验证码已发送至',verifyCode:'8 位验证码',verifyCodePH:'00000000',
     verifyAndComplete:'验证并完成注册',resendAfter:'{0} 秒后可重新发送',resendCode:'重新发送验证码',
     backToEdit:'← 返回修改信息',
     emailOrPhone:'邮箱 / 手机号',enterEmailOrPhone:'输入邮箱或手机号',
     enterPwd:'输入密码',forgotPwd:'忘记密码？',
     noAccount:'还没有账号？',goRegister:'去注册',
-    registerEmail:'注册邮箱',resetCodeHint:'邮件含 6 位验证码；也可直接点邮件里的链接完成验证',sendCode:'发送验证码',
+    registerEmail:'注册邮箱',resetCodeHint:'邮件含 8 位验证码；也可直接点邮件里的链接完成验证',sendCode:'发送验证码',
     backToLogin:'← 返回登录',newPwd:'新密码',newPwdPH:'设置新密码（至少6位）',
     confirmNewPwd:'确认新密码',confirmNewPwdPH:'再次输入新密码',
     resetPwd:'重置密码',reEnterEmail:'← 重新输入邮箱',
@@ -811,7 +811,7 @@ const i18n = {
     enterEmail:'请填写邮箱，用于接收验证码',setUsername:'请设置用户名',
     pwdMin6:'密码至少6位',pwdMismatch:'两次密码不一致',
     emailRegistered:'该邮箱已注册，请直接登录',usernameTaken:'该用户名已被使用',
-    verifyCodeSentSuccess:'验证码已发送到您的邮箱（含链接或 6 位码）',enter6Code:'请输入 6 位验证码，或点击邮件链接后再继续',
+    verifyCodeSentSuccess:'验证码已发送到您的邮箱（含链接或数字码）',enter6Code:'请输入邮件中的 8 位验证码，或点击邮件链接后再继续',
     regInfoLost:'注册信息丢失，请重新注册',verifyCodeError:'验证码错误或已过期',
     verifying:'验证中...',registerSuccess:'注册成功！欢迎加入',
     enterResetEmail:'请输入邮箱',emailNotRegistered:'该邮箱未注册',
@@ -913,13 +913,13 @@ const i18n = {
     password:'Senha',pwdPH:'Mínimo 6 caracteres',
     confirmPwd:'Confirmar Senha',confirmPwdPH:'Digite a senha novamente',
     sendCodeAndRegister:'Enviar Código e Cadastrar',alreadyHaveAccount:'Já tem conta？',goLogin:'Fazer login',
-    verifyCodeSent:'Código enviado para',verifyCode:'Código de 6 dígitos',verifyCodePH:'000000',
+    verifyCodeSent:'Código enviado para',verifyCode:'Código de 8 dígitos',verifyCodePH:'00000000',
     verifyAndComplete:'Verificar e Concluir',resendAfter:'Reenviar em {0}s',resendCode:'Reenviar código',
     backToEdit:'← Voltar e editar',
     emailOrPhone:'E-mail / Telefone',enterEmailOrPhone:'Digite e-mail ou telefone',
     enterPwd:'Digite a senha',forgotPwd:'Esqueceu a senha？',
     noAccount:'Não tem conta？',goRegister:'Cadastrar',
-    registerEmail:'E-mail cadastrado',resetCodeHint:'O e-mail contém código de 6 dígitos; ou clique no link do e-mail',sendCode:'Enviar Código',
+    registerEmail:'E-mail cadastrado',resetCodeHint:'O e-mail contém código de 8 dígitos; ou clique no link do e-mail',sendCode:'Enviar Código',
     backToLogin:'← Voltar ao login',newPwd:'Nova Senha',newPwdPH:'Mínimo 6 caracteres',
     confirmNewPwd:'Confirmar Nova Senha',confirmNewPwdPH:'Digite a senha novamente',
     resetPwd:'Redefinir Senha',reEnterEmail:'← Digitar e-mail novamente',
@@ -928,7 +928,7 @@ const i18n = {
     enterEmail:'Preencha o e-mail',setUsername:'Escolha um nome de usuário',
     pwdMin6:'Senha mínima de 6 caracteres',pwdMismatch:'Senhas não conferem',
     emailRegistered:'E-mail já registrado, faça login',usernameTaken:'Usuário já existe',
-    verifyCodeSentSuccess:'Código enviado para seu e-mail',enter6Code:'Digite o código de 6 dígitos',
+    verifyCodeSentSuccess:'Código enviado para seu e-mail',enter6Code:'Digite o código de 8 dígitos',
     regInfoLost:'Dados perdidos, registre-se novamente',verifyCodeError:'Código incorreto ou expirado',
     verifying:'Verificando...',registerSuccess:'Cadastro concluído! Bem-vindo!',
     enterResetEmail:'Digite o e-mail',emailNotRegistered:'E-mail não registrado',
@@ -2619,7 +2619,7 @@ function renderAuth() {
     html += '<div class="auth-switch">' + t('alreadyHaveAccount') + '<a onclick="switchAuth(\'login\')">' + t('goLogin') + '</a></div>';
   } else if (authMode === 'verify') {
     html += '<div style="text-align:center;margin-bottom:1.2rem"><div style="font-size:2.5rem;margin-bottom:.5rem">📧</div><div style="font-size:.82rem;color:var(--txt2)">' + t('verifyCodeSent') + '</div><div style="font-weight:600;margin-top:.2rem">' + esc(pendingRegData?.email || '') + '</div></div>';
-    html += '<div class="form-group"><label>' + t('verifyCode') + '</label><input type="text" id="authCode" placeholder="' + t('verifyCodePH') + '" maxlength="6" style="text-align:center;font-size:1.3rem;letter-spacing:.5rem;font-weight:600"></div>';
+    html += '<div class="form-group"><label>' + t('verifyCode') + '</label><input type="text" id="authCode" placeholder="' + t('verifyCodePH') + '" maxlength="8" style="text-align:center;font-size:1.3rem;letter-spacing:.5rem;font-weight:600"></div>';
     html += '<button class="auth-submit" id="verifyBtn" onclick="doVerify()">' + t('verifyAndComplete') + '</button>';
     html += '<div style="text-align:center;margin-top:.8rem">';
     if (verifyCountdown > 0) {
@@ -2642,7 +2642,7 @@ function renderAuth() {
     html += '<div class="auth-switch"><a onclick="switchAuth(\'login\')">' + t('backToLogin') + '</a></div>';
   } else if (authMode === 'resetVerify') {
     html += '<div style="text-align:center;margin-bottom:1rem"><div style="font-size:2.5rem;margin-bottom:.5rem">📧</div><div style="font-size:.82rem;color:var(--txt2)">' + t('verifyCodeSent') + '</div><div style="font-weight:600;margin-top:.2rem">' + esc(pendingResetEmail || '') + '</div></div>';
-    html += '<div class="form-group"><label>' + t('verifyCode') + '</label><input type="text" id="resetCode" placeholder="' + t('verifyCodePH') + '" maxlength="6" style="text-align:center;font-size:1.3rem;letter-spacing:.5rem;font-weight:600"></div>';
+    html += '<div class="form-group"><label>' + t('verifyCode') + '</label><input type="text" id="resetCode" placeholder="' + t('verifyCodePH') + '" maxlength="8" style="text-align:center;font-size:1.3rem;letter-spacing:.5rem;font-weight:600"></div>';
     html += '<div class="form-group"><label>' + t('newPwd') + '</label><input type="password" id="resetNewPwd" placeholder="' + t('newPwdPH') + '"></div>';
     html += '<div class="form-group"><label>' + t('confirmNewPwd') + '</label><input type="password" id="resetNewPwd2" placeholder="' + t('confirmNewPwdPH') + '"></div>';
     html += '<button class="auth-submit" id="resetBtn" onclick="doResetConfirm()">' + t('resetPwd') + '</button>';
@@ -2747,7 +2747,7 @@ async function doVerify() {
   const errEl = $('authError');
   const code = ($('authCode') || {}).value.trim();
 
-  if (!code || code.length !== 6) { errEl.textContent = t('enter6Code'); errEl.classList.add('show'); return; }
+  if (!code || code.length !== 8) { errEl.textContent = t('enter6Code'); errEl.classList.add('show'); return; }
   if (!pendingRegData) { errEl.textContent = t('regInfoLost'); errEl.classList.add('show'); return; }
 
   try {
@@ -2801,6 +2801,12 @@ async function doResetConfirm() {
   const code = ($('resetCode') || {}).value.trim();
   const newPwd = ($('resetNewPwd') || {}).value;
   const newPwd2 = ($('resetNewPwd2') || {}).value;
+  if (code && code.length !== 8) {
+    if (btn) { btn.disabled = false; if (btn.textContent === t('resetting')) btn.textContent = t('resetSuccess') ? t('resetSuccess') : 'OK'; }
+    errEl.textContent = t('enter6Code');
+    errEl.classList.add('show');
+    return;
+  }
   if (!newPwd || newPwd.length < 6) { errEl.textContent = t('pwdMin6'); errEl.classList.add('show'); return; }
   if (newPwd !== newPwd2) { errEl.textContent = t('pwdMismatch'); errEl.classList.add('show'); return; }
   try {
@@ -2808,7 +2814,7 @@ async function doResetConfirm() {
     const btn = $('resetBtn');
     if (btn) { btn.textContent = t('resetting'); btn.disabled = true; }
     // 1) 有 6 位码则校验；2) 或用户已点邮件链接（magic link）已有会话
-    if (code && code.length === 6) {
+    if (code && code.length === 8) {
       const { error } = await sb.auth.verifyOtp({ email: pendingResetEmail, token: code, type: 'email' });
       if (error) throw new Error(t('verifyCodeError'));
     } else {
@@ -2864,7 +2870,7 @@ function openEditProfile(mode) {
     html += '<div class="form-group"><label>' + t('newEmail') + '</label><input type="email" id="editNewEmail" placeholder="new@email.com"></div>';
     html += '<button class="auth-submit" onclick="sendEditEmailCode()">' + t('sendCode') + '</button>';
     html += '<div id="editEmailCodeArea" style="display:none;margin-top:1rem">';
-    html += '<div class="form-group"><label>' + t('emailCode') + '</label><input type="text" id="editEmailCode" placeholder="000000" maxlength="6" style="text-align:center;font-size:1.2rem;letter-spacing:.4rem"></div>';
+    html += '<div class="form-group"><label>' + t('emailCode') + '</label><input type="text" id="editEmailCode" placeholder="00000000" maxlength="8" style="text-align:center;font-size:1.2rem;letter-spacing:.4rem"></div>';
     html += '<button class="auth-submit" onclick="confirmEditEmail()">' + t('confirmEdit') + '</button></div>';
   } else {
     html += '<div class="form-group"><label>' + t('currentPhone') + '</label><input type="text" readonly value="' + esc(m.phone || t('notBound')) + '" style="background:var(--bg3);color:var(--txt3)"></div>';
@@ -2938,7 +2944,7 @@ async function confirmEditEmail() {
   const errEl = $('editProfileError');
   const newEmail = ($('editNewEmail') || {}).value.trim();
   const code = ($('editEmailCode') || {}).value.trim();
-  if (!code || code.length !== 6) { errEl.textContent = t('enter6Code'); errEl.classList.add('show'); return; }
+  if (!code || code.length !== 8) { errEl.textContent = t('enter6Code'); errEl.classList.add('show'); return; }
   try {
     errEl.classList.remove('show');
     const { error } = await sb.auth.verifyOtp({ email: newEmail, token: code, type: 'email' });
