@@ -1,3 +1,15 @@
+# ── 忽略文件（GLOBAL.md §4.5）──
+.env
+.env.*
+*.log
+.DS_Store
+__pycache__
+node_modules
+dist
+build
 # 历史备份不部署
 index-0*.html
 *.bak-*
+# 敏感配置
+secrets.local.json
+rclone-*.json

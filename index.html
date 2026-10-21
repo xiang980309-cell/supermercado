@@ -2501,7 +2501,7 @@ async function cancelShopOrder(orderId) {
   if (!confirm(t('cancelOrderConfirm') || 'Cancel this order?')) return;
   try {
     // 原子取消: 回补库存 + 状态变更 一个事务（含幂等状态守卫）
-    const { data: result, error: ce } = await sb.rpc('cancel_shop_order', {
+    const { data: result, error: ce } = await sb.rpc('member_cancel_order', {
       p_order_id: id,
       p_customer_id: Store.member ? Store.member.id : null
     });
