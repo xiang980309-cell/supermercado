@@ -2271,7 +2271,7 @@ function orderTabOf(o) {
   if (st === 'cancelled' || st === 'cancel') return 'cancelled';
   if (st === 'shipped') return 'shipped';
   if (st === 'delivered' || st === 'completed' || st === 'done') return 'done';
-  if (pay === 'pending_bill' || pay === 'pending') return 'unpaid';
+  if (pay === 'pending_bill') return 'unpaid';
   return 'toShip';
 }
 
