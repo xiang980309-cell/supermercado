@@ -2508,11 +2508,19 @@ async function cancelShopOrder(orderId) {
   }
   if (!confirm(t('cancelOrderConfirm') || 'Cancel this order?')) return;
   try {
-    // 原子取消: 回补库存 + 状态变更 一个事务（含幂等状态守卫）
-    const { data: result, error: ce } = await sb.rpc('member_cancel_order', {
-      p_order_id: id,
-      p_customer_id: Store.member ? Store.member.id : null
-    });
+    // 原子取消: 回补库存 + 状态变更（优先 member_cancel_order，兼容 my_cancel_order）
+    let result = null, ce = null;
+    try {
+      const r1 = await sb.rpc('member_cancel_order', {
+        p_order_id: id,
+        p_customer_id: Store.member ? Store.member.id : null
+      });
+      result = r1.data; ce = r1.error;
+    } catch (e1) { ce = e1; }
+    if (ce) {
+      const r2 = await sb.rpc('my_cancel_order', { p_order_id: id });
+      result = r2.data; ce = r2.error;
+    }
     if (ce) throw ce;
     if (result && result.error) throw new Error(result.error);
 
@@ -2583,11 +2591,20 @@ var billImgData = '';
 async function uploadBillImage(orderId) {
   if (!billImgData) { toast(t('selectBillFirst'), 'error'); return; }
   try {
-    await sb.from('shop_orders').update({
-      payment_image: billImgData,
-      payment_status: 'pending'
-    }).eq('id', orderId);
+    let ok = false;
+    try {
+      const r = await sb.rpc('my_upload_bill', { p_order_id: Number(orderId), p_payment_image: billImgData });
+      ok = !!(r.data && r.data.ok);
+      if (r.error) throw new Error(r.error.message || 'rpc');
+    } catch (e1) {
+      await sb.from('shop_orders').update({
+        payment_image: billImgData,
+        payment_status: 'pending'
+      }).eq('id', orderId);
+      ok = true;
+    }
     billImgData = '';
+    if (!ok) throw new Error('upload_failed');
     toast(t('billUploaded'), 'success');
     await loadMemberOrders();
     openOrderDetail(orderId);
