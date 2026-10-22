@@ -1207,7 +1207,15 @@ async function loadAllData() {
 async function loadMemberOrders() {
   if (!sb || !Store.member) return;
   try {
-    const { data: orders } = await sb.from('shop_orders').select('*').eq('customer_id', Store.member.id).order('created_at', { ascending: false });
+    let orders = [];
+    try {
+      const { data: byRpc, error: rpcErr } = await sb.rpc('my_orders', { p_customer_id: Store.member.id });
+      if (!rpcErr && Array.isArray(byRpc) && byRpc.length) orders = byRpc;
+    } catch (_) {}
+    if (!orders.length) {
+      const { data: byRest } = await sb.from('shop_orders').select('*').eq('customer_id', Store.member.id).order('created_at', { ascending: false });
+      orders = byRest || [];
+    }
     Store.orders = orders || [];
     if (orders && orders.length) {
       const ids = orders.map(o => o.id);
