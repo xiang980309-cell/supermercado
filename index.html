@@ -39,10 +39,11 @@ a{text-decoration:none;color:inherit}
 .logo{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
 .logo-icon{width:34px;height:34px;background:var(--ac);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;font-style:normal;box-shadow:0 2px 8px rgba(79,110,247,.3)}
 .logo-text{font-weight:700;font-size:1.15rem;color:var(--txt)}.logo-text span{color:var(--ac)}
-.hdr-search{flex:1;max-width:420px;position:relative}
-.hdr-search input{width:100%;padding:.55rem 1rem .55rem 2.4rem;background:var(--bg3);border:2px solid transparent;border-radius:var(--r);color:var(--txt);font-size:.85rem;transition:all var(--tr)}
-.hdr-search input:focus{background:var(--bg2);border-color:var(--ac);box-shadow:0 0 0 4px var(--ac3)}
-.hdr-search svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--txt3)}
+.hdr-search{flex:1;max-width:420px;display:flex;align-items:center;gap:.45rem;background:var(--bg3);border:2px solid transparent;border-radius:var(--r);padding:.35rem .75rem;transition:all var(--tr)}
+.hdr-search:focus-within{background:var(--bg2);border-color:var(--ac);box-shadow:0 0 0 4px var(--ac3)}
+.hdr-search input{flex:1;min-width:0;width:100%;padding:.25rem 0;background:transparent;border:none;outline:none;color:var(--txt);font-size:.85rem}
+.hdr-search input::placeholder{color:var(--txt3)}
+.hdr-search svg{flex-shrink:0;width:16px;height:16px;color:var(--txt3);pointer-events:none}
 .hdr-actions{display:flex;align-items:center;gap:.6rem;margin-left:auto}
 .hdr-btn{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);cursor:pointer;transition:all var(--tr);color:var(--txt2)}
 .hdr-btn:hover{background:var(--bg3);color:var(--txt)}
@@ -110,13 +111,20 @@ a{text-decoration:none;color:inherit}
 .hero p{font-size:.9rem;opacity:.85;position:relative;z-index:1;max-width:400px;line-height:1.6}
 .hero::after{content:'';position:absolute;right:-40px;top:-40px;width:250px;height:250px;background:rgba(255,255,255,.1);border-radius:50%}
 .hero::before{content:'';position:absolute;right:60px;bottom:-60px;width:180px;height:180px;background:rgba(255,255,255,.06);border-radius:50%}
-/* 首页 hero 下筛选分页 */
-.home-tabs{display:flex;gap:.55rem;overflow-x:auto;padding:.15rem .15rem 1.15rem;margin-bottom:.25rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.home-tabs::-webkit-scrollbar{display:none}
-.home-tab{flex:0 0 auto;padding:.62rem 1.15rem;border-radius:999px;background:var(--bg3);border:1.5px solid var(--border);color:var(--txt2);font-size:.84rem;font-weight:600;cursor:pointer;transition:all var(--tr);white-space:nowrap;user-select:none}
-.home-tab:active{transform:scale(.97)}
-.home-tab.on{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 4px 14px rgba(79,110,247,.28)}
-.home-tab .ht-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
+/* 首页 hero 下筛选入口（淘宝金刚区风格） */
+.home-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;padding:.25rem 0 1.25rem}
+.home-tab{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.85rem .35rem .75rem;border-radius:16px;background:var(--bg2);border:1.5px solid transparent;cursor:pointer;transition:all var(--tr);user-select:none}
+.home-tab:active{transform:scale(.96)}
+.home-tab.on{background:var(--ac4);border-color:var(--ac);box-shadow:0 4px 14px rgba(79,110,247,.12)}
+.home-tab .ht-ic{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.35rem;line-height:1;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.home-tab .ht-name{font-size:.78rem;font-weight:600;color:var(--txt);text-align:center;line-height:1.2}
+.home-tab.on .ht-name{color:var(--ac2)}
+@media(max-width:420px){
+  .home-tabs{gap:.55rem}
+  .home-tab{padding:.7rem .25rem .65rem;border-radius:14px}
+  .home-tab .ht-ic{width:38px;height:38px;font-size:1.15rem;border-radius:12px}
+  .home-tab .ht-name{font-size:.72rem}
+}
 
 /* CATEGORY PILLS */
 .cats-bar{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:1.2rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -460,7 +468,7 @@ a{text-decoration:none;color:inherit}
 .hdr-search{min-width:0}
 @media(max-width:420px){
   .hdr-inner{gap:.55rem;padding:.65rem .9rem}
-  .hdr-search input{padding:.5rem .8rem .5rem 2.1rem;font-size:.8rem}
+  .hdr-search input{font-size:.8rem}
 }
 /* === UI POLISH 3: motion & system === */
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -1568,24 +1576,25 @@ function renderHome() {
   let html = '';
 
   // Hero
-  if (!searchQuery && !homeLabel) {
+  if (!searchQuery) {
     html += '<div class="hero"><h1>' + t('welcomeTitle') + '</h1><p>' + t('welcomeDesc') + '</p></div>';
   }
 
   // Hero 下筛选分页：Novo / Oferta / Promoção / Categories
   if (!searchQuery) {
     const tabs = [
-      { k: 'novo', name: 'Novo', color: '#22c55e' },
-      { k: 'oferta', name: 'Oferta', color: '#f59e0b' },
-      { k: 'promocao', name: 'Promoção', color: '#7c5bf0' },
-      { k: 'cats', name: t('categories') || 'Categories', color: '#4f6ef7' }
+      { k: 'novo', name: 'Novo', color: '#22c55e', icon: '🆕' },
+      { k: 'oferta', name: 'Oferta', color: '#f59e0b', icon: '🏷️' },
+      { k: 'promocao', name: 'Promoção', color: '#7c5bf0', icon: '🎉' },
+      { k: 'cats', name: t('categories') || 'Categories', color: '#4f6ef7', icon: '🗂️' }
     ];
     const active = homeLabel === 'promo' ? 'promocao' : homeLabel;
     html += '<div class="home-tabs">';
     tabs.forEach(tab => {
       const on = (tab.k === 'cats') ? (active === '' || active === 'cats') && !homeLabel : (active === tab.k || (tab.k === 'promocao' && active === 'promo'));
       html += '<div class="home-tab' + (on ? ' on' : '') + '" onclick="setHomeTab(\'' + tab.k + '\')">'
-        + '<span class="ht-dot" style="background:' + (on ? '#fff' : tab.color) + '"></span>' + tab.name + '</div>';
+        + '<div class="ht-ic" style="background:' + tab.color + '22;color:' + tab.color + '">' + tab.icon + '</div>'
+        + '<div class="ht-name">' + tab.name + '</div></div>';
     });
     html += '</div>';
   }
