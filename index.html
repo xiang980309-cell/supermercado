@@ -110,6 +110,13 @@ a{text-decoration:none;color:inherit}
 .hero p{font-size:.9rem;opacity:.85;position:relative;z-index:1;max-width:400px;line-height:1.6}
 .hero::after{content:'';position:absolute;right:-40px;top:-40px;width:250px;height:250px;background:rgba(255,255,255,.1);border-radius:50%}
 .hero::before{content:'';position:absolute;right:60px;bottom:-60px;width:180px;height:180px;background:rgba(255,255,255,.06);border-radius:50%}
+/* 首页 hero 下筛选分页 */
+.home-tabs{display:flex;gap:.55rem;overflow-x:auto;padding:.15rem .15rem 1.15rem;margin-bottom:.25rem;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.home-tabs::-webkit-scrollbar{display:none}
+.home-tab{flex:0 0 auto;padding:.62rem 1.15rem;border-radius:999px;background:var(--bg3);border:1.5px solid var(--border);color:var(--txt2);font-size:.84rem;font-weight:600;cursor:pointer;transition:all var(--tr);white-space:nowrap;user-select:none}
+.home-tab:active{transform:scale(.97)}
+.home-tab.on{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 4px 14px rgba(79,110,247,.28)}
+.home-tab .ht-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
 
 /* CATEGORY PILLS */
 .cats-bar{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:1.2rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -396,8 +403,8 @@ a{text-decoration:none;color:inherit}
 /* ==================== 响应式 ==================== */
 @media(max-width:768px){
   html{font-size:14px}
-  .hdr-inner{padding:.6rem .8rem}
-  .hdr-search{max-width:none}
+  .hdr-inner{padding:.6rem .8rem;flex-wrap:wrap}
+  .hdr-search{order:3;flex:1 0 100%;max-width:none;width:100%}
   .hdr-username,.hdr-login-btn span{display:none}
   .hdr-user{padding:.3rem}
   .main{padding:.8rem;padding-bottom:5rem}
@@ -739,7 +746,7 @@ const i18n = {
     copy:'复制',copied:'已复制',loading:'加载中...',
     // 首页
     welcomeTitle:'欢迎来到 CloudStock',welcomeDesc:'品质好物，会员专享价格。注册即享会员优惠，消费越多折扣越大。',
-    searchResults:'搜索结果',allProducts:'全部商品',noProducts:'暂无商品',
+    searchResults:'搜索结果',allProducts:'全部商品',categories:'分类',noProducts:'暂无商品',
     tryOtherKeywords:'换个关键词试试',productsComingSoon:'商品即将上架，敬请期待',
     itemsCount:'件商品',subCats:'下级分类 ›',all:'全部',
     catTree:'分类导航',expandCat:'展开',collapseCat:'收起',catTreeDesc:'按分类浏览商品',
@@ -856,7 +863,7 @@ const i18n = {
     copy:'Copiar',copied:'Copiado!',loading:'Carregando...',
     // Página inicial
     welcomeTitle:'Bem-vindo ao CloudStock',welcomeDesc:'Produtos de qualidade, preços exclusivos para membros. Registre-se e ganhe desconto, quanto mais compra, maior o desconto.',
-    searchResults:'Resultados da busca',allProducts:'Todos os Produtos',noProducts:'Nenhum produto',
+    searchResults:'Resultados da busca',allProducts:'Todos os Produtos',categories:'Categorias',noProducts:'Nenhum produto',
     tryOtherKeywords:'Tente outras palavras-chave',productsComingSoon:'Produtos em breve, aguarde!',
     itemsCount:'produtos',subCats:'Subcategorias ›',all:'Todos',
     catTree:'Navegar',expandCat:'Expandir',collapseCat:'Recolher',catTreeDesc:'Navegar por categoria',
@@ -1422,6 +1429,20 @@ function setHomeLabel(lab) {
   navigate('home');
 }
 
+function setHomeTab(k) {
+  if (k === 'cats' || !k) {
+    homeLabel = '';
+    window._filterCatId = 'all';
+    catPath = [];
+    searchQuery = '';
+    const si = document.getElementById('searchInput');
+    if (si) si.value = '';
+    navigate('home');
+    return;
+  }
+  setHomeLabel(k === 'promocao' ? 'promocao' : k);
+}
+
 function setOrderSection(sec) {
   orderSection = sec || '';
   navigate('orders');
@@ -1549,6 +1570,24 @@ function renderHome() {
   // Hero
   if (!searchQuery && !homeLabel) {
     html += '<div class="hero"><h1>' + t('welcomeTitle') + '</h1><p>' + t('welcomeDesc') + '</p></div>';
+  }
+
+  // Hero 下筛选分页：Novo / Oferta / Promoção / Categories
+  if (!searchQuery) {
+    const tabs = [
+      { k: 'novo', name: 'Novo', color: '#22c55e' },
+      { k: 'oferta', name: 'Oferta', color: '#f59e0b' },
+      { k: 'promocao', name: 'Promoção', color: '#7c5bf0' },
+      { k: 'cats', name: t('categories') || 'Categories', color: '#4f6ef7' }
+    ];
+    const active = homeLabel === 'promo' ? 'promocao' : homeLabel;
+    html += '<div class="home-tabs">';
+    tabs.forEach(tab => {
+      const on = (tab.k === 'cats') ? (active === '' || active === 'cats') && !homeLabel : (active === tab.k || (tab.k === 'promocao' && active === 'promo'));
+      html += '<div class="home-tab' + (on ? ' on' : '') + '" onclick="setHomeTab(\'' + tab.k + '\')">'
+        + '<span class="ht-dot" style="background:' + (on ? '#fff' : tab.color) + '"></span>' + tab.name + '</div>';
+    });
+    html += '</div>';
   }
 
   const isRoot = !homeLabel && !searchQuery && catPath.length === 0 && (!window._filterCatId || window._filterCatId === 'all');
