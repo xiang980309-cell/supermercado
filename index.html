@@ -648,6 +648,19 @@ input[id^="lp_"]{
   border-radius:9px !important
 }
 /* end form controls unified */
+
+/* 预填可编辑框：字色变浅，聚焦编辑时恢复 */
+input.pre-val, textarea.pre-val { color: var(--txt3, #8b94a4); }
+input.pre-val:focus, textarea.pre-val:focus { color: var(--txt, #121826); }
+.form-group input:not(:placeholder-shown),
+.form-group textarea:not(:placeholder-shown),
+.fgm input:not([type=checkbox]):not([type=radio]):not(:placeholder-shown),
+.fgm textarea:not(:placeholder-shown) { color: var(--txt3, #8b94a4); }
+.form-group input:not(:placeholder-shown):focus,
+.form-group textarea:not(:placeholder-shown):focus,
+.fgm input:not([type=checkbox]):not([type=radio]):not(:placeholder-shown):focus,
+.fgm textarea:not(:placeholder-shown):focus { color: var(--txt, #121826); }
+
 </style>
 </head>
 <body>
@@ -1554,6 +1567,26 @@ function navigate(page) {
   window.scrollTo(0, 0);
 }
 
+
+function markPreVal(root) {
+  try {
+    const nodes = (root || document).querySelectorAll('input, textarea');
+    nodes.forEach(function(el) {
+      const ty = String(el.type || '').toLowerCase();
+      if (ty === 'checkbox' || ty === 'radio' || ty === 'file' || ty === 'hidden' || ty === 'button' || ty === 'submit') return;
+      if (el.value && String(el.value).trim()) el.classList.add('pre-val');
+    });
+  } catch (_) {}
+}
+document.addEventListener('focusin', function(e) {
+  const el = e.target;
+  if (el && el.classList) el.classList.remove('pre-val');
+});
+document.addEventListener('focusout', function(e) {
+  const el = e.target;
+  if (el && el.classList && el.value && String(el.value).trim()) el.classList.add('pre-val');
+});
+
 function renderPage() {
   const main = $('mainContent');
   switch(currentPage) {
@@ -1566,6 +1599,8 @@ function renderPage() {
   }
   renderUserArea();
   updateCartBadge();
+  markPreVal();
+  markPreVal();
   applyLang();
   if (typeof buildShopNav === 'function') buildShopNav();
 }
@@ -2032,7 +2067,9 @@ function renderCart() {
   html += '</div>';
 
   // Summary
-  const total = getCartTotal();
+  const goodsTotal = getCartTotal();
+  const shipFee = getShipFee();
+  const total = goodsTotal + shipFee;
   html += '<div class="cart-summary">';
   html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + Store.cart.reduce((s, i) => s + i.qty, 0) + ' ' + t('pieces') + '</span></div>';
   html += '<div class="cart-summary-row"><span>' + t('itemTotal') + '</span><span>¥' + fmtPrice(total) + '</span></div>';
@@ -2057,8 +2094,20 @@ var onibusImgData = '';
 function onShipMethodChange(val) {
   const el = document.getElementById('onibusFields');
   if (el) el.style.display = val === 'onibus' ? '' : 'none';
+  // 切换配送方式后刷新运费/总额
+  if (typeof currentPage !== 'undefined' && currentPage === 'checkout' && typeof renderPage === 'function') {
+    try { renderPage(); } catch(_){}
+  }
 }
 
+function getShipFee() {
+  // 仓库端「发货设置」Motoboy 运费
+  const method = (typeof getSelectedShipMethod === 'function') ? getSelectedShipMethod() : 'motoboy';
+  if (method !== 'motoboy') return 0;
+  const raw = paymentAccounts && paymentAccounts.motoboy_fee ? paymentAccounts.motoboy_fee.value : '';
+  const n = Number(raw);
+  return isFinite(n) && n > 0 ? n : 0;
+}
 function getSelectedShipMethod() {
   const el = document.querySelector('input[name="shipMethod"]:checked');
   return el ? el.value : 'motoboy';
@@ -2261,7 +2310,8 @@ async function goCheckout() {
         shipping_phone: shipPhone,
         onibus_name: onibusName,
         onibus_schedule_img: onibusImg,
-        subtotal: total,
+        shipping_cost: getShipFee(),
+        subtotal: goodsTotal,
         total: total,
         original_total: total,
         bill_deadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
@@ -2373,7 +2423,7 @@ function renderCheckout() {
   // 结算总额（含配送费）
   const cartTotalQty2 = Store.cart.reduce((s, i) => s + i.qty, 0);
   const goodsTotal = getCartTotal();
-  const shipFee = 0;
+  const shipFee = getShipFee();
   const total = goodsTotal + shipFee;
   html += '<div class="cart-summary">';
   html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + cartTotalQty2 + ' ' + t('pieces') + '</span></div>';
