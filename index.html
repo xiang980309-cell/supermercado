@@ -222,9 +222,10 @@ a{text-decoration:none;color:inherit}
 .modal-fhdr .back-btn:hover{background:var(--bg3)}
 .modal-fhdr .back-btn svg{width:20px;height:20px}
 .modal-fhdr .fhdr-title{font-weight:600;font-size:.95rem}
-.modal-close{position:absolute;top:.8rem;right:.8rem;width:34px;height:34px;background:rgba(0,0,0,.05);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--tr);z-index:5}
-.modal-close:hover{background:rgba(0,0,0,.1)}
-.modal-close svg{width:18px;height:18px;color:var(--txt2)}
+.modal-close{position:absolute;top:1rem;right:1rem;width:48px;height:48px;background:rgba(0,0,0,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--tr);z-index:5}
+.modal-close:hover{background:rgba(0,0,0,.12)}
+.modal-close:active{transform:scale(.92)}
+.modal-close svg{width:24px;height:24px;color:var(--txt2)}
 
 /* DETAIL 布局 */
 .detail-img{width:100%;aspect-ratio:1;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative}
@@ -1690,7 +1691,7 @@ function renderHome() {
           if (price < p.price) html += '<span class="prod-original">¥' + fmtPrice(p.price) + '</span>';
           html += '</div>';
           html += '<div class="prod-meta"><span class="prod-stock ' + stockClass + '">' + stockText + '</span>';
-          html += '<div class="prod-cart-btn" onclick="event.stopPropagation();addToCart(' + p.id + ')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>';
+          html += '<div class="prod-cart-btn" onclick="event.stopPropagation();openDetail(' + p.id + ')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>';
           html += '</div></div></div>';
         });
         html += '</div>';
@@ -1752,7 +1753,7 @@ function renderHome() {
         if (price < p.price) html += '<span class="prod-original">¥' + fmtPrice(p.price) + '</span>';
         html += '</div>';
         html += '<div class="prod-meta"><span class="prod-stock ' + stockClass + '">' + stockText + '</span>';
-        html += '<div class="prod-cart-btn" onclick="event.stopPropagation();addToCart(' + p.id + ')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>';
+        html += '<div class="prod-cart-btn" onclick="event.stopPropagation();openDetail(' + p.id + ')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>';
         html += '</div></div></div>';
       });
       html += '</div>';
@@ -1918,6 +1919,12 @@ function addToCart(productId, qty, size, specType) {
   specType = specType || 'piece';
   const p = Store.products.find(x => x.id === productId);
   if (!p) return;
+  // 有尺码的商品必须已选尺码（仅详情页下单）
+  if (p.sizes && p.sizes.length && !size) {
+    openDetail(productId);
+    toast(t('selectSizeFirst') || '请先选择尺码', 'info');
+    return;
+  }
   // For products with sizes, size is part of the cart key
   const existing = Store.cart.find(i => i.productId === productId && (i.size || null) === size && (i.spec_type || 'piece') === specType);
   const maxStock = size && p.size_stock ? ((p.size_stock || {})[size] || p.stock) : p.stock;
@@ -2183,6 +2190,20 @@ async function goCheckout() {
   try {
     const selAddrEl = document.querySelector('input[name="shipAddr"]:checked');
     const defaultAddr = selAddrEl ? Store.addresses.find(a => String(a.id) === selAddrEl.value) : (Store.addresses.find(a => a.is_default) || Store.addresses[0]);
+    // 优先用结算页手动填写的地址
+    const ckName = (document.getElementById('ckName')?.value || '').trim();
+    const ckPhone = (document.getElementById('ckPhone')?.value || '').trim();
+    const ckAddr = (document.getElementById('ckAddr')?.value || '').trim();
+    const shipName = ckName || (defaultAddr ? defaultAddr.recipient : (Store.member?.name || Store.member?.display_name || ''));
+    const shipPhone = ckPhone || (defaultAddr ? defaultAddr.phone : (Store.member?.phone || ''));
+    const shipAddr = ckAddr || (defaultAddr ? (defaultAddr.address || defaultAddr.detail || defaultAddr.full_address || '') : '');
+    if (!shipAddr) {
+      toast(t('enterAddr') || '请填写收货地址', 'info');
+      window._checkoutBusy = false;
+      const btn0 = document.querySelector('[onclick*="goCheckout"]');
+      if (btn0) { btn0.disabled = false; btn0.style.opacity = ''; }
+      return;
+    }
     const shipMethod = getSelectedShipMethod();
     const onibusName = shipMethod === 'onibus' ? (document.getElementById('onibusNameInput')?.value || '') : '';
     const onibusImg = shipMethod === 'onibus' ? onibusImgData : '';
@@ -2213,9 +2234,9 @@ async function goCheckout() {
       p_customer_id: Store.member.id,
       p_order: {
         pickup_method: shipMethod,
-        shipping_address: defaultAddr ? defaultAddr.address : '',
-        shipping_name: defaultAddr ? defaultAddr.recipient : Store.member.name,
-        shipping_phone: defaultAddr ? defaultAddr.phone : (Store.member.phone || ''),
+        shipping_address: shipAddr,
+        shipping_name: shipName,
+        shipping_phone: shipPhone,
         onibus_name: onibusName,
         onibus_schedule_img: onibusImg,
         subtotal: total,
@@ -2269,9 +2290,14 @@ function renderCheckout() {
       if (ck) addrChecked = true;
       html += '<label style="display:flex;align-items:center;gap:.5rem;padding:.55rem;border:1.5px solid ' + (a.is_default ? 'var(--ac)' : 'var(--border)') + ';border-radius:var(--r);margin-bottom:.45rem;cursor:pointer"><input type="radio" name="shipAddr" value="' + a.id + '"' + ck + ' style="accent-color:var(--ac)"><span style="font-size:.83rem">' + esc(a.recipient || '') + (a.phone ? ' · ' + esc(a.phone) : '') + (a.address || a.detail || a.full_address ? ' · ' + esc(a.address || a.detail || a.full_address || '') : '') + '</span></label>';
     });
-  } else {
-    html += '<div style="color:var(--txt3);font-size:.82rem">' + t('noAddress') + '</div>';
   }
+  // 手动填写地址（无地址时默认展开）
+  html += '<div class="cart-summary" style="margin-top:.55rem">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (Store.addresses.length ? t('enterAddr') || '填写地址' : t('shippingAddress')) + '</div>';
+  html += '<div class="form-group"><label>' + (t('name') || '姓名') + '</label><input type="text" id="ckName" placeholder="' + (t('name') || '姓名') + '" value="' + esc((Store.member && (Store.member.name || Store.member.display_name)) || '') + '"></div>';
+  html += '<div class="form-group"><label>' + (t('phone') || '电话') + '</label><input type="tel" id="ckPhone" placeholder="' + (t('phone') || '电话') + '" value="' + esc((Store.member && Store.member.phone) || '') + '"></div>';
+  html += '<div class="form-group"><label>' + (t('shippingAddress') || '收货地址') + '</label><textarea id="ckAddr" rows="3" placeholder="' + (t('enterAddr') || '详细地址') + '" style="width:100%;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--r);font-size:.88rem;resize:vertical;background:var(--bg2);color:var(--txt)"></textarea></div>';
+  html += '</div>';
   html += '</div>';
   // 商品清单
   const cartTotalQty = Store.cart.reduce((s, i) => s + i.qty, 0);
