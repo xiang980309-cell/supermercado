@@ -1097,6 +1097,13 @@ function scoreSearch(p, tokens) {
   return s;
 }
 function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function imgSrc(u) {
+  if (!u) return '';
+  const s = String(u).replace(/[\"'<>\r\n\0]/g, '').trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^data:image\//i.test(s)) return s;
+  return '';
+}
 function fmtPrice(n) { return Number(n || 0).toFixed(2); }
 function fmtDate(iso) {
   if (!iso) return '';
@@ -1203,10 +1210,18 @@ async function loadAllData() {
       id: p.id, name: p.name, sku: p.sku,
       catIds: Store.productCats.filter(x => x.product_id === p.id).map(x => x.category_id),
       stock: st || 0, price: Number(p.price || 0),
-      img: p.image || '', note: p.note || '',
+      img: (function(){
+        const raw = p.image || '';
+        if (raw) return raw;
+        const arr = p.images || [];
+        const first = arr[0];
+        if (!first) return '';
+        return typeof first === 'string' ? first : (first.url || first.image || first.src || '');
+      })(), note: p.note || '',
       desc: p.description || '', images: p.images || [],
       sales: p.sales || 0, tags: p.tags || [], featured: p.featured || false, label: p.label || '',
-      sizeStock: p.size_stock || {}, sizes: p.sizes || []
+      category_type: p.category_type || 'general',
+      sizeStock: (function(ss){ try { return typeof ss === 'string' ? JSON.parse(ss) : (ss || {}); } catch(_) { return {}; } })(p.size_stock), sizes: p.sizes || []
       };
     });
     // Optional tables - only query if they exist
@@ -1424,7 +1439,7 @@ let searchQuery = '';
 
 
 // ==================== 商城侧边栏 ====================
-var homeLabel = '';
+var homeLabel = 'novo';
 var orderSection = ''; // '' = all sections; unpaid|toShip|shipped|done|cancelled
 
 function setHomeLabel(lab) {
@@ -1439,7 +1454,7 @@ function setHomeLabel(lab) {
 
 function setHomeTab(k) {
   if (k === 'cats' || !k) {
-    homeLabel = '';
+    homeLabel = 'cats';
     window._filterCatId = 'all';
     catPath = [];
     searchQuery = '';
@@ -1448,7 +1463,7 @@ function setHomeTab(k) {
     navigate('home');
     return;
   }
-  setHomeLabel(k === 'promocao' ? 'promocao' : k);
+  setHomeLabel(k === 'promo' ? 'promocao' : k);
 }
 
 function setOrderSection(sec) {
@@ -1574,6 +1589,12 @@ function handleSearch(val) {
 // ==================== 首页 ====================
 function renderHome() {
   let html = '';
+  const normLab = (x) => {
+    const l = String(x || '').toLowerCase().trim();
+    if (l === 'promo' || l === 'promocao' || l === 'promotion') return 'promocao';
+    return l;
+  };
+  const LAB_TITLE = { novo: 'Novo', oferta: 'Oferta', promocao: 'Promoção' };
 
   // Hero
   if (!searchQuery) {
@@ -1591,7 +1612,7 @@ function renderHome() {
     const active = homeLabel === 'promo' ? 'promocao' : homeLabel;
     html += '<div class="home-tabs">';
     tabs.forEach(tab => {
-      const on = (tab.k === 'cats') ? (active === '' || active === 'cats') && !homeLabel : (active === tab.k || (tab.k === 'promocao' && active === 'promo'));
+      const on = (tab.k === 'cats') ? (active === 'cats') : (active === tab.k || (tab.k === 'promocao' && active === 'promo'));
       html += '<div class="home-tab' + (on ? ' on' : '') + '" onclick="setHomeTab(\'' + tab.k + '\')">'
         + '<div class="ht-ic" style="background:' + tab.color + '22;color:' + tab.color + '">' + tab.icon + '</div>'
         + '<div class="ht-name">' + tab.name + '</div></div>';
@@ -1599,7 +1620,7 @@ function renderHome() {
     html += '</div>';
   }
 
-  const isRoot = !homeLabel && !searchQuery && catPath.length === 0 && (!window._filterCatId || window._filterCatId === 'all');
+  const isRoot = (!homeLabel || homeLabel === 'cats') && !searchQuery && catPath.length === 0 && (!window._filterCatId || window._filterCatId === 'all');
 
   // Breadcrumb (when inside a category)
   if (!searchQuery && catPath.length > 0) {
@@ -1616,8 +1637,8 @@ function renderHome() {
     html += '</div>';
   }
 
-  // Category block cards FIRST
-  if (!searchQuery) {
+  // Category block cards FIRST（标签筛选时隐藏，直接看商品）
+  if (!searchQuery && (!homeLabel || homeLabel === 'cats')) {
     const currentCatId = window._filterCatId || 'all';
     const catsToShow = currentCatId === 'all' ? getRootCats() : getChildren(currentCatId);
     if (catsToShow.length > 0) {
@@ -1639,15 +1660,15 @@ function renderHome() {
 
   // Labeled products sections AFTER categories
   if (isRoot) {
-    const allLabeled = Store.products.filter(p => p.stock > 0 && (p.label === 'novo' || p.label === 'oferta' || p.label === 'promo'));
+    const allLabeled = Store.products.filter(p => p.stock > 0 && ['novo','oferta','promocao'].indexOf(normLab(p.label)) >= 0);
     if (allLabeled.length > 0) {
       const sections = [
         { label: 'novo', icon: '🆕', title: 'Novidades', color: '#22c55e' },
         { label: 'oferta', icon: '🏷️', title: 'Ofertas', color: '#f59e0b' },
-        { label: 'promo', icon: '🎉', title: 'Promoções', color: '#7c5bf0' }
+        { label: 'promocao', icon: '🎉', title: 'Promoções', color: '#7c5bf0' }
       ];
       sections.forEach(sec => {
-        const items = allLabeled.filter(p => p.label === sec.label);
+        const items = allLabeled.filter(p => normLab(p.label) === normLab(sec.label));
         if (items.length === 0) return;
         html += '<div class="sec-title" style="margin-top:1.2rem"><div class="sec-dot" style="background:' + sec.color + '"></div>' + sec.icon + ' ' + sec.title + ' <span style="font-size:.7rem;color:var(--txt3);font-weight:400">(' + items.length + ')</span></div>';
         html += '<div class="prod-grid">';
@@ -1655,10 +1676,10 @@ function renderHome() {
           const price = getProductPrice(p);
           const cats = getProductCats(p);
           const stockClass = p.stock <= 0 ? 'out' : (p.stock <= 5 ? 'low' : '');
-          const stockText = p.stock <= 0 ? t('soldOut') : (p.stock <= 5 ? t('onlyLeft', p.stock) : t('stock', p.stock));
+          const stockText = p.stock <= 0 ? t('soldOut') : '';
           html += '<div class="prod-card" onclick="openDetail(' + p.id + ')">';
           html += '<div class="prod-img">';
-          if (p.img) html += '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy">';
+          if (p.img) html += '<img src="' + imgSrc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy">';
           else html += '<span class="prod-emoji">📦</span>';
           html += '<span class="prod-tag" style="background:' + sec.color + '">' + sec.icon + '</span>';
           html += '</div>';
@@ -1688,20 +1709,16 @@ function renderHome() {
     const catIds = getDescendantIds(window._filterCatId);
     prods = prods.filter(p => p.catIds.some(cid => catIds.includes(cid)));
   }
-  if (homeLabel) {
-    const lab = homeLabel;
-    prods = prods.filter(p => {
-      const l = String(p.label || '').toLowerCase();
-      if (lab === 'promocao') return l === 'promocao' || l === 'promo';
-      return l === lab;
-    });
-    if (!searchQuery && catPath.length === 0) {
-      html += '<div class="sec-title"><div class="sec-dot"></div>' + esc(lab) + ' <span style="font-size:.72rem;color:var(--txt3);font-weight:400">(' + prods.length + ')</span></div>';
+  if (homeLabel && homeLabel !== 'cats') {
+    const lab = normLab(homeLabel);
+    prods = prods.filter(p => normLab(p.label) === lab);
+    if (!searchQuery) {
+      html += '<div class="sec-title"><div class="sec-dot"></div>' + (LAB_TITLE[lab] || esc(homeLabel)) + ' <span style="font-size:.72rem;color:var(--txt3);font-weight:400">(' + prods.length + ')</span></div>';
     }
   }
 
-  // Show products only when inside a category or searching
-  if (!isRoot) {
+  // 分类/搜索/标签筛选时都展示商品网格
+  if (!isRoot || (homeLabel && homeLabel !== 'cats')) {
     if (searchQuery) {
       html += '<div class="sec-title"><div class="sec-dot"></div>' + t('searchResults') + ' · "' + esc(searchQuery) + '"</div>';
     } else if (catPath.length > 0) {
@@ -1717,16 +1734,16 @@ function renderHome() {
         const price = getProductPrice(p);
         const cats = getProductCats(p);
         const stockClass = p.stock <= 0 ? 'out' : (p.stock <= 5 ? 'low' : '');
-        const stockText = p.stock <= 0 ? t('soldOut') : (p.stock <= 5 ? t('onlyLeft', p.stock) : t('stock', p.stock));
+        const stockText = p.stock <= 0 ? t('soldOut') : '';
         html += '<div class="prod-card" onclick="openDetail(' + p.id + ')">';
         html += '<div class="prod-img">';
-        if (p.img) html += '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy">';
+        if (p.img) html += '<img src="' + imgSrc(p.img) + '" alt="' + esc(p.name) + '" loading="lazy">';
         else html += '<span class="prod-emoji">📦</span>';
         if (p.stock <= 5 && p.stock > 0) html += '<span class="prod-tag">' + t('almostSoldOut') + '</span>';
         if (p.stock <= 0) html += '<span class="prod-tag" style="background:var(--red)">' + t('soldOut') + '</span>';
-        if (p.label === 'novo') html += '<span class="prod-tag" style="background:#22c55e">🆕</span>';
-        if (p.label === 'oferta') html += '<span class="prod-tag" style="background:#f59e0b">🏷️</span>';
-        if (p.label === 'promo') html += '<span class="prod-tag" style="background:#7c5bf0">🎉</span>';
+        if (normLab(p.label) === 'novo') html += '<span class="prod-tag" style="background:#22c55e">🆕</span>';
+        if (normLab(p.label) === 'oferta') html += '<span class="prod-tag" style="background:#f59e0b">🏷️</span>';
+        if (normLab(p.label) === 'promocao') html += '<span class="prod-tag" style="background:#7c5bf0">🎉</span>';
         html += '</div>';
         html += '<div class="prod-body">';
         html += '<div class="prod-name">' + esc(p.name) + '</div>';
@@ -1759,7 +1776,7 @@ function openDetail(productId) {
   let html = '';
   html += '<div class="modal-close" onclick="closeDetail()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
   html += '<div class="detail-img">';
-  if (p.img) html += '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '">';
+  if (p.img) html += '<img src="' + imgSrc(p.img) + '" alt="' + esc(p.name) + '">';
   else html += '<span class="prod-emoji">📦</span>';
   html += '</div>';
   html += '<div class="detail-info">';
@@ -1768,35 +1785,30 @@ function openDetail(productId) {
     html += '<div class="detail-cats">' + cats.map((c, i) => '<span class="prod-cat-tag" style="background:' + CAT_COLORS[i % CAT_COLORS.length] + '15;color:' + CAT_COLORS[i % CAT_COLORS.length] + '">' + (c.icon || '') + ' ' + esc(c.name) + '</span>').join('') + '</div>';
   }
 
-  // Price box
+  // Price box：只显示当前会员等级对应价
   html += '<div class="detail-price-box">';
   html += '<div class="detail-price-label">' + t('currentPrice') + '</div>';
   html += '<span class="detail-price" id="detailPriceDisplay">¥' + fmtPrice(price) + '</span>';
-  if (price < p.price) html += '<span class="detail-original">¥' + fmtPrice(p.price) + '</span>';
-  if (Store.member && Store.levels.length > 1) {
-    html += '<div class="detail-level-prices">';
-    levelPrices.forEach(lp => {
-      html += '<div class="level-price-item"><span class="lp-icon">' + lp.level.icon + '</span><span class="lp-name">' + esc(lp.level.name) + '</span><span class="lp-price">¥' + fmtPrice(lp.price) + '</span></div>';
-    });
-    html += '</div>';
-  }
+  if (Store.member && price < p.price) html += '<span class="detail-original">¥' + fmtPrice(p.price) + '</span>';
   html += '</div>';
 
   // Meta info
   html += '<div class="detail-meta">';
   html += '<div class="detail-meta-item"><span class="dm-label">SKU</span><span class="dm-value">' + esc(p.sku || '-') + '</span></div>';
-  html += '<div class="detail-meta-item"><span class="dm-label">' + t('stockQty') + '</span><span class="dm-value">' + p.stock + ' ' + t('pieces') + '</span></div>';
   html += '</div>';
 
   // Size selector (clothing/shoes)
-  if ((p.category_type === 'clothing' || p.category_type === 'shoes') && p.sizes && p.sizes.length) {
+  if (p.sizes && p.sizes.length) {
     selectedSize = null;
     html += '<div style="margin-bottom:1rem"><div style="font-size:.82rem;font-weight:500;color:var(--txt2);margin-bottom:.4rem">' + t('selectSize') + '</div>';
     html += '<div style="display:flex;flex-wrap:wrap;gap:.4rem">';
     (p.sizes || []).forEach(s => {
-      const stock = (p.size_stock || {})[s] || 0;
-      const disabled = stock <= 0;
-      html += '<div class="size-option" data-size="' + s + '" onclick="selectSize(\'' + s + '\',' + stock + ')" style="padding:.35rem .7rem;border:1.5px solid ' + (disabled ? 'var(--border)' : 'var(--ac)') + ';border-radius:8px;font-size:.8rem;cursor:' + (disabled ? 'not-allowed' : 'pointer') + ';opacity:' + (disabled ? '0.4' : '1') + ';' + (disabled ? '' : 'background:var(--ac3)') + '">' + s + (disabled ? '' : '(' + stock + ')') + '</div>';
+      const ss = p.sizeStock || {};
+      const hasSS = ss && Object.keys(ss).length > 0;
+      const stock = hasSS ? (Number(ss[s]) || 0) : (p.stock || 0);
+      // size_stock 未配置时不要禁用，否则全部点不了
+      const disabled = hasSS && stock <= 0;
+      html += '<div class="size-option" data-size="' + s + '" onclick="selectSize(\'' + s + '\',' + (stock || 1) + ')" style="padding:.35rem .7rem;border:1.5px solid ' + (disabled ? 'var(--border)' : 'var(--ac)') + ';border-radius:8px;font-size:.8rem;cursor:' + (disabled ? 'not-allowed' : 'pointer') + ';opacity:' + (disabled ? '0.4' : '1') + ';background:var(--ac3)">' + s + '</div>';
     });
     html += '</div></div>';
   }
@@ -1822,7 +1834,7 @@ function openDetail(productId) {
   html += '<div class="qty-btn" onclick="detailQtyChange(-1)">−</div>';
   html += '<input class="qty-val" type="number" id="detailQty" value="1" min="1" max="' + p.stock + '" onchange="detailQtyValidate()">';
   html += '<div class="qty-btn" onclick="detailQtyChange(1)">+</div>';
-  html += '</div><span class="stock-hint">' + t('stockQty') + ' ' + p.stock + ' ' + t('pieces') + '</span></div>';
+  html += '</div></div>';
 
   // Description
   if (p.note) {
@@ -1922,7 +1934,7 @@ function addToCartFromDetail(productId) {
   const p = Store.products.find(x => x.id === productId);
   const qtyInput = $('detailQty');
   const qty = qtyInput ? parseInt(qtyInput.value) : 1;
-  if (p && (p.category_type === 'clothing' || p.category_type === 'shoes') && p.sizes && p.sizes.length && !selectedSize) {
+  if (p && p.sizes && p.sizes.length && !selectedSize) {
     toast(t('selectSizeFirst'), 'info');
     return;
   }
@@ -1936,7 +1948,7 @@ function buyNow(productId) {
   const p = Store.products.find(x => x.id === productId);
   const qtyInput = $('detailQty');
   const qty = qtyInput ? parseInt(qtyInput.value) : 1;
-  if (p && (p.category_type === 'clothing' || p.category_type === 'shoes') && p.sizes && p.sizes.length && !selectedSize) {
+  if (p && p.sizes && p.sizes.length && !selectedSize) {
     toast(t('selectSizeFirst'), 'info');
     return;
   }
@@ -1995,7 +2007,7 @@ function renderCart() {
     const price = getCartPrice(p, item.qty, cartTotalQty);
     html += '<div class="cart-item">';
     html += '<div class="cart-item-img">';
-    if (p.img) html += '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '">';
+    if (p.img) html += '<img src="' + imgSrc(p.img) + '" alt="' + esc(p.name) + '">';
     else html += '<span class="prod-emoji">📦</span>';
     html += '</div>';
     html += '<div class="cart-item-info">';
@@ -2270,7 +2282,7 @@ function renderCheckout() {
     const price = getCartPrice(p, item.qty, cartTotalQty);
     html += '<div class="cart-item">';
     html += '<div class="cart-item-img">';
-    if (p.img) html += '<img src="' + esc(p.img) + '" alt="' + esc(p.name) + '">';
+    if (p.img) html += '<img src="' + imgSrc(p.img) + '" alt="' + esc(p.name) + '">';
     else html += '<span class="prod-emoji">🛒</span>';
     html += '</div>';
     html += '<div class="cart-item-info">';
