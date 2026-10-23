@@ -1537,6 +1537,9 @@ navigate = function(page) {
 };
 
 function navigate(page) {
+  if (page === 'checkout' && typeof loadPaymentAccounts === 'function') {
+    loadPaymentAccounts().then(function(){ if (currentPage === 'checkout') renderPage(); }).catch(function(){});
+  }
   currentPage = page;
   // Close modals
   $('detailModal').classList.remove('show');
@@ -2066,14 +2069,30 @@ let paymentAccounts = {};
 
 async function loadPaymentAccounts() {
   try {
-    const { data } = await sb.from('site_settings').select('key,value,label');
-    if (data) {
-      paymentAccounts = {};
-      data.forEach(r => { paymentAccounts[r.key] = { value: r.value, label: r.label }; });
-    }
-  } catch(e) { console.warn('Load payment accounts failed:', e); }
+    const { data, error } = await sb.from('site_settings').select('key,value,label');
+    if (error) throw error;
+    paymentAccounts = {};
+    (data || []).forEach(r => {
+      if (r && r.key) paymentAccounts[r.key] = { value: r.value || '', label: r.label || '' };
+    });
+    if (!Object.keys(paymentAccounts).length) console.warn('paymentAccounts empty');
+    return paymentAccounts;
+  } catch(e) {
+    console.warn('Load payment accounts failed:', e);
+    toast(t('payLoadFail') || '付款账号拉取失败', 'error');
+    return {};
+  }
 }
 
+function copyPayVal(val) {
+  if (!val) return;
+  const s = String(val);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(s).then(function(){ toast(t('copied') || '已复制', 'info'); }).catch(function(){ window.prompt('Copy', s); });
+  } else {
+    window.prompt('Copy', s);
+  }
+}
 function renderPaymentAccounts(orderTotal) {
   let tiers = [];
   try { tiers = paymentAccounts.pay_tiers && paymentAccounts.pay_tiers.value ? JSON.parse(paymentAccounts.pay_tiers.value) : []; } catch (_) { tiers = []; }
@@ -2103,7 +2122,7 @@ function renderPaymentAccounts(orderTotal) {
     }
   }
   const items = [
-    { key: 'pix', icon: '🔑', name: 'PIX' },
+    { key: 'pix', icon: '🔑', name: 'PIX', copy: true },
     { key: 'bank_name', icon: '🏦', name: t('bankName') },
     { key: 'bank_account', icon: '💳', name: t('bankAccount') },
     { key: 'bank_holder', icon: '👤', name: t('accountHolder') }
@@ -2118,7 +2137,7 @@ function renderPaymentAccounts(orderTotal) {
       html += '<div style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;border-bottom:1px solid #17b26815">';
       html += '<span style="font-size:.9rem">' + item.icon + '</span>';
       html += '<span style="font-size:.78rem;color:var(--txt2);min-width:60px">' + item.name + '</span>';
-      html += '<span style="font-size:.85rem;font-weight:500;flex:1;user-select:all;cursor:text">' + esc(val) + '</span>';
+      html += '<span onclick="copyPayVal(this.dataset.val)" data-val="' + esc(val) + '" title="点击复制" style="font-size:.85rem;font-weight:500;flex:1;user-select:all;cursor:text">' + esc(val) + '</span>';
       html += '<span onclick="copyText(this,\'' + esc(val).replace(/'/g, "\\'") + '\')" style="font-size:.7rem;color:var(--ac);cursor:pointer;padding:.15rem .4rem;background:var(--ac3);border-radius:4px">' + t('copy') + '</span>';
       html += '</div>';
     }
@@ -2146,7 +2165,8 @@ function copyText(el, text) {
 
 let afterLoginPage = null;
 
-function goCheckoutPage() {
+async function goCheckoutPage() {
+  try { if (typeof loadPaymentAccounts === 'function') await loadPaymentAccounts(); } catch(_){}
   if (!Store.member) { showLoginPrompt(); return; }
   if (Store.cart.length === 0) return;
   navigate('checkout');
@@ -2222,6 +2242,8 @@ async function goCheckout() {
         product_sku: p.sku || '',
         product_image: p.img || '',
         qty: item.qty,
+        size: item.size || '',
+        spec_type: item.spec_type || 'piece',
         price: price,
         original_price: price,
         level_price: price,
@@ -2248,6 +2270,22 @@ async function goCheckout() {
     });
     if (oe) throw oe;
     if (result && result.error) throw new Error(result.error);
+    // 结算页上传的付款账单（成功才清空，失败保留并提示）
+    const orderIdNew = result && (result.id || result.order_id);
+    if (billImgData && orderIdNew) {
+      try {
+        const okBill = await commitBillImage(orderIdNew, billImgData);
+        if (okBill) {
+          billImgData = '';
+          toast(t('billUploaded') || '账单已上传', 'success');
+        } else {
+          toast(t('uploadFailed') || '账单上传失败，请在订单详情重试', 'error');
+        }
+      } catch (eBill) {
+        console.warn('bill upload', eBill);
+        toast(t('uploadFailed') || '账单上传失败，请在订单详情重试', 'error');
+      }
+    }
 
     // 同步本地缓存（place_order 已清服务端购物车）
     Store.cart.forEach(item => {
@@ -2299,6 +2337,20 @@ function renderCheckout() {
   html += '<div class="form-group"><label>' + (t('shippingAddress') || '收货地址') + '</label><textarea id="ckAddr" rows="3" placeholder="' + (t('enterAddr') || '详细地址') + '" style="width:100%;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--r);font-size:.88rem;resize:vertical;background:var(--bg2);color:var(--txt)"></textarea></div>';
   html += '</div>';
   html += '</div>';
+  // Shipping method selector
+  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;margin-bottom:1rem">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + t('shippingMethod') + '</div>';
+  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem">';
+  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="motoboy" checked onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Motoboy</label>';
+  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="correios" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Correios</label>';
+  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="pickup" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)">' + t('pickup') + '</label>';
+  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="onibus" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Ônibus</label>';
+  html += '</div>';
+  // Onibus fields (hidden by default)
+  html += '<div id="onibusFields" style="display:none;margin-top:.6rem">';
+  html += '<div style="margin-bottom:.5rem"><input type="text" id="onibusNameInput" placeholder="' + t('onibusNamePH') + '" style="width:100%;padding:.5rem .8rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);font-size:.85rem"></div>';
+  html += '<div><div style="font-size:.72rem;color:var(--txt3);margin-bottom:.3rem">' + t('onibusScheduleImg') + '</div><div class="ib" id="onibusImgIB" onclick="document.getElementById(\'onibusImgIF\').click()" style="width:80px;height:80px"><span class="ia">+</span><input type="file" id="onibusImgIF" accept="image/*" onchange="hImg(this,\'onibusImgIB\',\'onibusImgData\')" /></div></div>';
+  html += '</div></div>';
   // 商品清单
   const cartTotalQty = Store.cart.reduce((s, i) => s + i.qty, 0);
   html += '<div class="cart-list">';
@@ -2318,34 +2370,32 @@ function renderCheckout() {
     html += '</div></div>';
   });
   html += '</div>';
-  // 金额明细
-  const total = getCartTotal();
+  // 结算总额（含配送费）
+  const cartTotalQty2 = Store.cart.reduce((s, i) => s + i.qty, 0);
+  const goodsTotal = getCartTotal();
+  const shipFee = 0;
+  const total = goodsTotal + shipFee;
   html += '<div class="cart-summary">';
-  html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + cartTotalQty + ' ' + t('pieces') + '</span></div>';
-  html += '<div class="cart-summary-row"><span>' + t('itemTotal') + '</span><span>￥' + fmtPrice(total) + '</span></div>';
+  html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + cartTotalQty2 + ' ' + t('pieces') + '</span></div>';
+  html += '<div class="cart-summary-row"><span>' + t('itemTotal') + '</span><span>￥' + fmtPrice(goodsTotal) + '</span></div>';
+  html += '<div class="cart-summary-row"><span>' + (t('shippingCost') || '配送费') + '</span><span>￥' + fmtPrice(shipFee) + '</span></div>';
   if (Store.member) {
     const level = Store.levels.find(l => l.id === Store.member.member_level);
     if (level) html += '<div class="cart-summary-row"><span>' + t('memberLevel') + '</span><span>' + level.icon + ' ' + esc(level.name) + '</span></div>';
   }
   html += '<div class="cart-summary-row total"><span>' + t('total') + '</span><span class="cs-val">￥' + fmtPrice(total) + '</span></div>';
-  if (cartTotalQty >= 36 || Store.cart.some(i => i.qty >= 12)) {
-    html += '<div style="color:var(--green);font-size:.78rem;text-align:right;padding-top:.3rem">' + t('bulkDiscount') + '</div>';
-  }
   html += '</div>';
-  // Shipping method selector
-  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;margin-bottom:1rem">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + t('shippingMethod') + '</div>';
-  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem">';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="motoboy" checked onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Motoboy</label>';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="correios" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Correios</label>';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="pickup" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)">' + t('pickup') + '</label>';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="onibus" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Ônibus</label>';
+  // 付款账号（可点复制）
+  html += '<div class="cart-summary">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('paymentAccount') || '付款账号') + '</div>';
+  html += renderPaymentAccounts(total) || '<div style="color:var(--txt3);font-size:.82rem">' + (t('noPayAccount') || '暂无付款账号') + '</div>';
   html += '</div>';
-  // Onibus fields (hidden by default)
-  html += '<div id="onibusFields" style="display:none;margin-top:.6rem">';
-  html += '<div style="margin-bottom:.5rem"><input type="text" id="onibusNameInput" placeholder="' + t('onibusNamePH') + '" style="width:100%;padding:.5rem .8rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);font-size:.85rem"></div>';
-  html += '<div><div style="font-size:.72rem;color:var(--txt3);margin-bottom:.3rem">' + t('onibusScheduleImg') + '</div><div class="ib" id="onibusImgIB" onclick="document.getElementById(\'onibusImgIF\').click()" style="width:80px;height:80px"><span class="ia">+</span><input type="file" id="onibusImgIF" accept="image/*" onchange="hImg(this,\'onibusImgIB\',\'onibusImgData\')" /></div></div>';
-  html += '</div></div>';
+  // 上传付款账单
+  html += '<div class="cart-summary">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('uploadBill') || '上传付款账单') + '</div>';
+  html += '<div style="font-size:.72rem;color:var(--txt3);margin-bottom:.5rem">' + (t('uploadBillHint') || '点击上传付款截图/账单') + '</div>';
+  html += '<div class="ib" id="ckBillIB" onclick="document.getElementById(\'ckBillIF\').click()" style="width:96px;height:96px;border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden"><span class="ia" style="font-size:1.5rem;color:var(--txt3)">+</span><input type="file" id="ckBillIF" accept="image/*" style="display:none" onchange="hImg(this,\'ckBillIB\',\'billImgData\')"></div>';
+  html += '</div>';
   html += '<button class="cart-checkout-btn" onclick="goCheckout()">' + t('submitOrder') + '</button>';
   return html;
 }
@@ -2403,6 +2453,34 @@ function renderOrderCard(order) {
     if (item.product_image) html += '<img src="' + esc(item.product_image) + '">';
     else html += '<span class="prod-emoji">📦</span>';
     html += '</div>';
+  // 付款账号 + 账单（结算页）
+  html += '<div class="cart-summary" style="margin-top:.75rem">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('paymentAccount') || '付款账号') + '</div>';
+  html += renderPaymentAccounts(getCartTotal()) || '<div style="color:var(--txt3);font-size:.82rem">' + (t('noPayAccount') || '暂无付款账号') + '</div>';
+  html += '</div>';
+  html += '<div class="cart-summary" style="margin-top:.55rem">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('uploadBill') || '上传付款账单') + '</div>';
+  html += '<div style="font-size:.72rem;color:var(--txt3);margin-bottom:.5rem">' + (t('uploadBillHint') || '点击上传付款截图/账单') + '</div>';
+  html += '<div class="ib" id="ckBillIB" onclick="document.getElementById(\'ckBillIF\').click()" style="width:96px;height:96px;border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden"><span class="ia" style="font-size:1.5rem;color:var(--txt3)">+</span><input type="file" id="ckBillIF" accept="image/*" style="display:none" onchange="hImg(this,\'ckBillIB\',\'billImgData\')"></div>';
+  html += '</div>';
+  // 金额明细（含配送费）
+  const goodsTotal = getCartTotal();
+  const shipFee = 0;
+  const total = goodsTotal + shipFee;
+  html += '<div class="cart-summary">';
+  html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + cartTotalQty + ' ' + t('pieces') + '</span></div>';
+  html += '<div class="cart-summary-row"><span>' + t('itemTotal') + '</span><span>￥' + fmtPrice(goodsTotal) + '</span></div>';
+  html += '<div class="cart-summary-row"><span>' + (t('shippingCost') || '配送费') + '</span><span>￥' + fmtPrice(shipFee) + '</span></div>';
+  if (Store.member) {
+    const level = Store.levels.find(l => l.id === Store.member.member_level);
+    if (level) html += '<div class="cart-summary-row"><span>' + t('memberLevel') + '</span><span>' + level.icon + ' ' + esc(level.name) + '</span></div>';
+  }
+  html += '<div class="cart-summary-row total"><span>' + t('total') + '</span><span class="cs-val">￥' + fmtPrice(total) + '</span></div>';
+  if (cartTotalQty >= 36 || Store.cart.some(i => i.qty >= 12)) {
+    html += '<div style="color:var(--green);font-size:.78rem;text-align:right;padding-top:.3rem">' + t('bulkDiscount') + '</div>';
+  }
+  html += '</div>';
+
   });
   if (items.length > 4) html += '<div class="order-item-more">+' + (items.length - 4) + '</div>';
   html += '</div>';
@@ -2542,7 +2620,7 @@ function openOrderDetail(orderId) {
     html += '<div style="background:var(--bg3);border-radius:var(--r);padding:1rem;text-align:center">';
     html += '<div id="billUploadArea" style="margin-bottom:.8rem">';
     if (order.payment_image) {
-      html += '<img src="' + esc(order.payment_image) + '" style="max-width:200px;max-height:200px;border-radius:8px;margin-bottom:.5rem" />';
+      html += '<img src="' + imgSrc(order.payment_image) + '" style="max-width:200px;max-height:200px;border-radius:8px;margin-bottom:.5rem" />';
       html += '<div style="font-size:.75rem;color:var(--green);margin-bottom:.5rem">✓ ' + t('billUploaded') + '</div>';
     } else {
       html += '<div class="ib" id="billIB" onclick="document.getElementById(\'billIF\').click()" style="width:120px;height:120px;margin:0 auto"><span class="ia">+</span><input type="file" id="billIF" accept="image/*" onchange="hImg(this,\'billIB\',\'billImgData\')" /></div>';
@@ -2555,7 +2633,7 @@ function openOrderDetail(orderId) {
     html += '</div></div>';
   } else if (order.payment_image) {
     html += '<div class="od-section"><div class="od-label">' + t('paymentBill') + '</div>';
-    html += '<img src="' + esc(order.payment_image) + '" style="max-width:100%;max-height:300px;border-radius:8px" />';
+    html += '<img src="' + imgSrc(order.payment_image) + '" style="max-width:100%;max-height:300px;border-radius:8px" />';
     html += '</div>';
   }
 
@@ -2674,21 +2752,27 @@ async function uploadOnibusImg(orderId) {
 
 // Bill upload
 var billImgData = '';
+async function commitBillImage(orderId, img) {
+  if (!img || !orderId) return Promise.resolve(false);
+  return sb.rpc('my_upload_bill', { p_order_id: Number(orderId), p_payment_image: img }).then(function(r) {
+    if (r && r.data && r.data.ok) return true;
+    throw new Error((r && r.data && r.data.error) || 'upload_fail');
+  }).catch(function() {
+    return sb.from('shop_orders').update({
+      payment_image: img,
+      payment_status: 'pending',
+      bill_uploaded_at: new Date().toISOString()
+    }).eq('id', Number(orderId)).then(function(u) {
+      if (u && u.error) throw u.error;
+      return true;
+    });
+  });
+}
 async function uploadBillImage(orderId) {
   if (!billImgData) { toast(t('selectBillFirst'), 'error'); return; }
   try {
-    let ok = false;
-    try {
-      const r = await sb.rpc('my_upload_bill', { p_order_id: Number(orderId), p_payment_image: billImgData });
-      ok = !!(r.data && r.data.ok);
-      if (r.error) throw new Error(r.error.message || 'rpc');
-    } catch (e1) {
-      await sb.from('shop_orders').update({
-        payment_image: billImgData,
-        payment_status: 'pending'
-      }).eq('id', orderId);
-      ok = true;
-    }
+    const ok = await commitBillImage(orderId, billImgData);
+    if (!ok) throw new Error('upload_fail');
     billImgData = '';
     if (!ok) throw new Error('upload_failed');
     toast(t('billUploaded'), 'success');
