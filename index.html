@@ -895,7 +895,7 @@ const i18n = {
     orderSubmitted:'订单已提交，请在2小时内上传账单完成付款',orderFailed:'下单失败：',
     retry:'请重试',enterOnibusClientName:'请填写Ônibus客户姓名',
   },
-  pt: {
+  noPayAccount:'暂无付款账号',paymentAccount:'付款账号',pt: { accountDisabled:'Conta desativada', accountHolder:'Titular da conta', bankAccount:'Conta bancária', bankName:'Banco', close:'Fechar', enterAddr:'Informe o endereço', payAccount:'Conta de pagamento', payLoadFail:'Falha ao carregar contas de pagamento', usernameExists:'Nome de usuário já existe', wrongCreds:'Usuário ou senha incorretos',  noPayAccount:'Sem conta de pagamento', paymentAccount:'Conta de pagamento',
     // Geral
     searchPH:'Buscar produtos...', applyRefund:'Solicitar reembolso', applyReturn:'Solicitar devolução', bairroLabel:'Bairro', cityLabel:'Cidade', compLabel:'Complemento (opcional)', numLabel:'Número (opcional)', phone11:'Telefone deve ter 11 dígitos', refundConfirm:'Confirmar solicitação de reembolso?', refundRequested:'Solicitação de reembolso enviada', returnConfirm:'Confirmar solicitação de devolução?', returnRequested:'Solicitação de devolução enviada', selectAll:'Selecionar todos', selectedCount:'{0} selecionados', stateLabel:'Estado', streetLabel:'Logradouro', tabAfterSale:'Pós-venda', tabAll:'Todos',cart:'Carrinho',home:'Início',orders:'Pedidos',my:'Minha Conta',
     confirm:'Confirmar',save:'Salvar',submit:'Enviar',cancel:'Cancelar',edit:'Editar',delete:'Excluir',
@@ -1794,7 +1794,7 @@ function renderHome() {
     const currentCatId = window._filterCatId || 'all';
     const catsToShow = currentCatId === 'all' ? getRootCats() : getChildren(currentCatId);
     if (catsToShow.length > 0) {
-      html += '<div class="sec-title"><div class="sec-dot"></div>' + (isRoot ? (t('categories') || '分类') : t('subCats')) + '</div>';
+      html += '<div class="sec-title"><div class="sec-dot"></div>' + (isRoot ? t('categories') : t('subCats')) + '</div>';
       html += '<div class="cat-row-list">' + renderCatRowList(catsToShow, 0) + '</div>';
     }
   }
@@ -2060,7 +2060,7 @@ function addToCart(productId, qty, size, specType) {
   // 有尺码的商品必须已选尺码（仅详情页下单）
   if (p.sizes && p.sizes.length && !size) {
     openDetail(productId);
-    toast(t('selectSizeFirst') || '请先选择尺码', 'info');
+    toast(t('selectSizeFirst') , 'info');
     return;
   }
   // For products with sizes, size is part of the cart key
@@ -2184,7 +2184,7 @@ function renderCart() {
   // 全选
   const allKeys = Store.cart.map(i => cartItemKey(i.productId, i.size, i.spec_type));
   const selCount = allKeys.filter(k => _cartSel[k]).length;
-  html += '<div style="display:flex;align-items:center;gap:.55rem;padding:.65rem .25rem .85rem"><label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--txt2)"><input type="checkbox" id="cartSelAll"' + (selCount && selCount === allKeys.length ? ' checked' : '') + ' onchange="toggleCartSelAll(this.checked)" style="accent-color:var(--ac);width:18px;height:18px"> ' + (t('selectAll') || '全选') + '</label><span style="font-size:.78rem;color:var(--txt3)">' + selCount + '/' + allKeys.length + '</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:.55rem;padding:.65rem .25rem .85rem"><label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--txt2)"><input type="checkbox" id="cartSelAll"' + (selCount && selCount === allKeys.length ? ' checked' : '') + ' onchange="toggleCartSelAll(this.checked)" style="accent-color:var(--ac);width:18px;height:18px"> ' + (t('selectAll') ) + '</label><span style="font-size:.78rem;color:var(--txt3)">' + selCount + '/' + allKeys.length + '</span></div>';
   Store.cart.forEach(item => {
     const p = Store.products.find(x => x.id === item.productId);
     if (!p) return;
@@ -2278,7 +2278,7 @@ async function loadPaymentAccounts() {
     return paymentAccounts;
   } catch(e) {
     console.warn('Load payment accounts failed:', e);
-    toast(t('payLoadFail') || '付款账号拉取失败', 'error');
+    toast(t('payLoadFail') , 'error');
     return {};
   }
 }
@@ -2287,7 +2287,7 @@ function copyPayVal(val) {
   if (!val) return;
   const s = String(val);
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(s).then(function(){ toast(t('copied') || '已复制', 'info'); }).catch(function(){ window.prompt('Copy', s); });
+    navigator.clipboard.writeText(s).then(function(){ toast(t('copied') , 'info'); }).catch(function(){ window.prompt('Copy', s); });
   } else {
     window.prompt('Copy', s);
   }
@@ -2428,14 +2428,14 @@ async function goCheckout() {
     const shipPhone = (_slot !== 'custom' && _slotAddr && _slotAddr.phone) ? _slotAddr.phone : (ckPhone || (defaultAddr ? defaultAddr.phone : (Store.member?.phone || '')));
     const shipAddr = (_slot !== 'custom' && _slotAddr && (_slotAddr.address || _slotAddr.detail || _slotAddr.full_address)) ? (_slotAddr.address || _slotAddr.detail || _slotAddr.full_address) : (ckAddr || (defaultAddr ? (defaultAddr.address || defaultAddr.detail || defaultAddr.full_address || '') : ''));
     if (ckPhone && !/^\d{11}$/.test(ckPhone)) {
-      toast(t('phone11') || '手机号需为11位数字', 'info');
+      toast(t('phone11') , 'info');
       window._checkoutBusy = false;
       const btnP = document.querySelector('[onclick*="goCheckout"]');
       if (btnP) { btnP.disabled = false; btnP.style.opacity = ''; }
       return;
     }
     if (!shipAddr) {
-      toast(t('enterAddr') || '请填写收货地址', 'info');
+      toast(t('enterAddr') , 'info');
       window._checkoutBusy = false;
       const btn0 = document.querySelector('[onclick*="goCheckout"]');
       if (btn0) { btn0.disabled = false; btn0.style.opacity = ''; }
@@ -2495,13 +2495,13 @@ async function goCheckout() {
         const okBill = await commitBillImage(orderIdNew, billImgData);
         if (okBill) {
           billImgData = '';
-          toast(t('billUploaded') || '账单已上传', 'success');
+          toast(t('billUploaded') , 'success');
         } else {
-          toast(t('uploadFailed') || '账单上传失败，请在订单详情重试', 'error');
+          toast(t('uploadFailed') , 'error');
         }
       } catch (eBill) {
         console.warn('bill upload', eBill);
-        toast(t('uploadFailed') || '账单上传失败，请在订单详情重试', 'error');
+        toast(t('uploadFailed') , 'error');
       }
     }
 
@@ -2542,20 +2542,14 @@ function renderCheckout() {
   html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.55rem;flex-wrap:wrap">';
   html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em">' + t('shippingAddress') + '</div>';
   html += '<div style="display:flex;gap:.35rem;flex-wrap:wrap">';
-  const slotOpts = (typeof ADDR_SLOTS !== 'undefined' && ADDR_SLOTS) ? ADDR_SLOTS : [
-    { k: 'default', name: t('slotDefault') || '默认' },
-    { k: 'fav1', name: t('slotFav1') || '常用1' },
-    { k: 'fav2', name: t('slotFav2') || '常用2' },
-    { k: 'fav3', name: t('slotFav3') || '常用3' },
-    { k: 'fav4', name: t('slotFav4') || '常用4' }
-  ];
+  const slotOpts = getAddrSlots();
   const activeSlot = window._ckAddrSlot || 'default';
   slotOpts.forEach(function(s) {
     const on = activeSlot === s.k;
     html += '<button type="button" onclick="setCkAddrSlot(this.dataset.slot)" data-slot="' + s.k + '" style="padding:.38rem .62rem;border-radius:999px;border:1.5px solid ' + (on ? 'var(--ac)' : 'var(--border)') + ';background:' + (on ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (on ? '#fff' : 'var(--txt2)') + ';font-size:.75rem;font-weight:600;cursor:pointer">' + s.name + '</button>';
   });
   const onCustom = activeSlot === 'custom';
-  html += '<button type="button" onclick="setCkAddrSlot(this.dataset.slot)" data-slot="custom" style="padding:.38rem .62rem;border-radius:999px;border:1.5px solid ' + (onCustom ? 'var(--ac)' : 'var(--border)') + ';background:' + (onCustom ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (onCustom ? '#fff' : 'var(--txt2)') + ';font-size:.75rem;font-weight:600;cursor:pointer">' + (t('customAddr') || '自定义地址') + '</button>';
+  html += '<button type="button" onclick="setCkAddrSlot(this.dataset.slot)" data-slot="custom" style="padding:.38rem .62rem;border-radius:999px;border:1.5px solid ' + (onCustom ? 'var(--ac)' : 'var(--border)') + ';background:' + (onCustom ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (onCustom ? '#fff' : 'var(--txt2)') + ';font-size:.75rem;font-weight:600;cursor:pointer">' + t('customAddr') + '</button>';
   html += '</div></div>';
 
   // 对应槽位地址展示
@@ -2569,13 +2563,13 @@ function renderCheckout() {
         + '<div style="color:var(--txt2);margin-top:.25rem">' + esc(sa.address || sa.detail || sa.full_address || '') + '</div>'
         + '</div>';
     } else {
-      html += '<div style="color:var(--txt3);font-size:.82rem;padding:.5rem 0">' + (t('noAddress') || '暂无地址') + '</div>';
+      html += '<div style="color:var(--txt3);font-size:.82rem;padding:.5rem 0">' + t('noAddress') + '</div>';
     }
   } else {
     // 自定义地址表单（仅选中时展开）
     html += '<div id="ckCustomAddrBox" style="margin-top:.35rem">';
-    html += '<div class="form-group"><label>' + (t('name') || '姓名') + '</label><input type="text" id="ckName" maxlength="40" placeholder="' + (t('name') || '姓名') + '" value="' + esc((Store.member && (Store.member.name || Store.member.display_name)) || '') + '"></div>';
-    html += '<div class="form-group"><label>' + (t('phone') || '电话') + '</label><input type="tel" id="ckPhone" maxlength="11" inputmode="numeric" placeholder="' + (t('phone') || '电话') + '" value="' + esc((Store.member && Store.member.phone) || '') + '"></div>';
+    html += '<div class="form-group"><label>' + t('name') + '</label><input type="text" id="ckName" maxlength="40" placeholder="' + t('name') + '" value="' + esc((Store.member && (Store.member.name || Store.member.display_name)) || '') + '"></div>';
+    html += '<div class="form-group"><label>' + t('phone') + '</label><input type="tel" id="ckPhone" maxlength="11" inputmode="numeric" placeholder="' + t('phone') + '" value="' + esc((Store.member && Store.member.phone) || '') + '"></div>';
     html += '<div class="form-group"><label>' + (t('cepLabel') || 'CEP') + '</label><input type="tel" id="ckCep" maxlength="8" inputmode="numeric" placeholder="' + (t('cepPH') || 'CEP') + '" oninput="this.value=this.value.replace(/\D/g,\'\')" onblur="autoFillBrCep(this,\'ck\')"></div>';
     html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div class="form-group"><label>' + (t('stateLabel') || 'UF') + '</label><input type="text" id="ckUf" maxlength="2" placeholder="UF"></div><div class="form-group"><label>' + (t('cityLabel') || 'Cidade') + '</label><input type="text" id="ckCity" placeholder="' + (t('cityLabel') || 'Cidade') + '"></div></div>';
     html += '<div class="form-group"><label>' + (t('bairroLabel') || 'Bairro') + '</label><input type="text" id="ckBairro" placeholder="' + (t('bairroLabel') || 'Bairro') + '"></div>';
@@ -2613,7 +2607,7 @@ function renderCheckout() {
   html += '<div class="cart-summary">';
   html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + cartTotalQty2 + ' ' + t('pieces') + '</span></div>';
   html += '<div class="cart-summary-row"><span>' + t('itemTotal') + '</span><span>￥' + fmtPrice(goodsTotal) + '</span></div>';
-  html += '<div class="cart-summary-row"><span>' + (t('shippingCost') || '配送费') + '</span><span>￥' + fmtPrice(shipFee) + '</span></div>';
+  html += '<div class="cart-summary-row"><span>' + t('shippingCost') + '</span><span>￥' + fmtPrice(shipFee) + '</span></div>';
   if (Store.member) {
     const level = Store.levels.find(l => l.id === Store.member.member_level);
     if (level) html += '<div class="cart-summary-row"><span>' + t('memberLevel') + '</span><span>' + level.icon + ' ' + esc(level.name) + '</span></div>';
@@ -2622,13 +2616,13 @@ function renderCheckout() {
   html += '</div>';
   // 付款账号（可点复制）
   html += '<div class="cart-summary">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('paymentAccount') || '付款账号') + '</div>';
-  html += renderPaymentAccounts(total) || '<div style="color:var(--txt3);font-size:.82rem">' + (t('noPayAccount') || '暂无付款账号') + '</div>';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + t('paymentAccount') + '</div>';
+  html += renderPaymentAccounts(total) || '<div style="color:var(--txt3);font-size:.82rem">' + t('noPayAccount') + '</div>';
   html += '</div>';
   // 上传付款账单
   html += '<div class="cart-summary">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('uploadBill') || '上传付款账单') + '</div>';
-  html += '<div style="font-size:.72rem;color:var(--txt3);margin-bottom:.5rem">' + (t('uploadBillHint') || '点击上传付款截图/账单') + '</div>';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + t('uploadBill') + '</div>';
+  html += '<div style="font-size:.72rem;color:var(--txt3);margin-bottom:.5rem">' + t('uploadBillHint') + '</div>';
   html += '<div class="ib" id="ckBillIB" onclick="document.getElementById(\'ckBillIF\').click()" style="width:96px;height:96px;border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden"><span class="ia" style="font-size:1.5rem;color:var(--txt3)">+</span><input type="file" id="ckBillIF" accept="image/*" style="display:none" onchange="hImg(this,\'ckBillIB\',\'billImgData\')"></div>';
   html += '</div>';
   html += '<button class="cart-checkout-btn" onclick="goCheckout()">' + t('submitOrder') + '</button>';
@@ -2679,11 +2673,11 @@ function renderOrders() {
   let html = '<div class="sec-title"><div class="sec-dot"></div>' + t('myOrders') + '</div>';
 
   const SECTIONS = [
-    { k: '', label: t('tabAll') || '全部' },
+    { k: '', label: t('tabAll')  },
     { k: 'unpaid', label: t('tabUnpaid') },
     { k: 'toShip', label: t('tabToShip') },
     { k: 'done', label: t('tabDone') },
-    { k: 'aftersale', label: t('tabAfterSale') || '售后' }
+    { k: 'aftersale', label: t('tabAfterSale')  }
   ];
 
   html += '<div class="order-tabs">';
@@ -2904,14 +2898,14 @@ async function requestReturn(orderId) {
   const id = Number(orderId);
   const order = (Store.orders || []).find(o => Number(o.id) === id);
   if (!order) return;
-  if (!confirm(t('returnConfirm') || '是否确认申请退货？')) return;
+  if (!confirm(t('returnConfirm') )) return;
   try {
     const { error } = await sb.from('shop_orders').update({
       payment_status: 'return_requested'
     }).eq('id', id);
     if (error) throw error;
     order.payment_status = 'return_requested';
-    toast(t('returnRequested') || '退货申请已提交', 'success');
+    toast(t('returnRequested') , 'success');
     if (typeof loadMemberOrders === 'function') {
       try { await loadMemberOrders(); } catch(_){}
     }
@@ -2926,14 +2920,14 @@ async function requestRefund(orderId) {
   const id = Number(orderId);
   const order = (Store.orders || []).find(o => Number(o.id) === id);
   if (!order) return;
-  if (!confirm(t('refundConfirm') || '是否确认申请退款？')) return;
+  if (!confirm(t('refundConfirm') )) return;
   try {
     const { error } = await sb.from('shop_orders').update({
       payment_status: 'refund_requested'
     }).eq('id', id);
     if (error) throw error;
     order.payment_status = 'refund_requested';
-    toast(t('refundRequested') || '退款申请已提交', 'success');
+    toast(t('refundRequested') , 'success');
     if (typeof loadMemberOrders === 'function') {
       try { await loadMemberOrders(); } catch(_){}
     }
@@ -3199,7 +3193,7 @@ async function doRegister() {
   const pwd2 = ($('authPwd2') || {}).value;
 
   if (!email) { errEl.textContent = t('enterEmail'); errEl.classList.add('show'); return; }
-  if (phone && !/^\d{11}$/.test(phone)) { errEl.textContent = t('phone11') || '手机号需为11位数字'; errEl.classList.add('show'); return; }
+  if (phone && !/^\d{11}$/.test(phone)) { errEl.textContent = t('phone11') ; errEl.classList.add('show'); return; }
   if (!username) { errEl.textContent = t('setUsername'); errEl.classList.add('show'); return; }
   if (!pwd || pwd.length < 6) { errEl.textContent = t('pwdMin6'); errEl.classList.add('show'); return; }
   if (pwd !== pwd2) { errEl.textContent = t('pwdMismatch'); errEl.classList.add('show'); return; }
@@ -3442,7 +3436,7 @@ async function confirmEditPhone() {
   const errEl = $('editProfileError');
   const newPhone = ($('editNewPhone') || {}).value.trim();
   if (!newPhone) { errEl.textContent = t('enterNewPhone'); errEl.classList.add('show'); return; }
-  if (!/^\d{11}$/.test(newPhone)) { errEl.textContent = t('phone11') || '手机号需为11位数字'; errEl.classList.add('show'); return; }
+  if (!/^\d{11}$/.test(newPhone)) { errEl.textContent = t('phone11') ; errEl.classList.add('show'); return; }
   // 手机号唯一性由后端校验
   try {
     await sb.rpc('member_update_profile', { p_id: Store.member.id, p_phone: newPhone, p_name: null, p_nickname: null, p_email: null, p_username: null, p_moto_address: null, p_correio_address: null });
@@ -3482,7 +3476,7 @@ function autoFillBrCep(inputEl, prefix) {
   const raw = String((inputEl && inputEl.value) || '').replace(/\D/g, '');
   if (raw.length !== 8) return;
   fetchBrAddressByCep(raw).then(function(info) {
-    if (!info) { toast(t('cepNotFound') || 'CEP 未找到，请手动填写', 'info'); return; }
+    if (!info) { toast(t('cepNotFound') , 'info'); return; }
     const set = function(id, val) {
       const el = $(id);
       if (el && !String(el.value || '').trim()) el.value = val || '';
@@ -3491,7 +3485,7 @@ function autoFillBrCep(inputEl, prefix) {
     set(prefix + 'City', info.city);
     set(prefix + 'Bairro', info.neighborhood);
     set(prefix + 'Street', info.street);
-    toast(t('cepFilled') || '已根据 CEP 自动填写地址', 'success');
+    toast(t('cepFilled') , 'success');
   });
 }
 function syncBrAddressPreview(prefix) {
@@ -3514,9 +3508,18 @@ function composeBrAddress(prefix) {
   if (city || uf) parts.push([city, uf].filter(Boolean).join(' - '));
   return parts.join(', ');
 }
-const ADDR_SLOTS = [ { k: 'default', name: '默认' }, { k: 'fav1', name: '常用1' }, { k: 'fav2', name: '常用2' }, { k: 'fav3', name: '常用3' }, { k: 'fav4', name: '常用4' } ];
+function getAddrSlots() {
+  return [
+    { k: 'default', name: t('slotDefault')  },
+    { k: 'fav1', name: t('slotFav1')  },
+    { k: 'fav2', name: t('slotFav2')  },
+    { k: 'fav3', name: t('slotFav3')  },
+    { k: 'fav4', name: t('slotFav4')  }
+  ];
+}
+const ADDR_SLOTS_PROXY = null;
 function slotName(k) {
-  const m = { 'default': t('slotDefault') || '默认', fav1: t('slotFav1') || '常用1', fav2: t('slotFav2') || '常用2', fav3: t('slotFav3') || '常用3', fav4: t('slotFav4') || '常用4' };
+  const m = { 'default': t('slotDefault') , fav1: t('slotFav1') , fav2: t('slotFav2') , fav3: t('slotFav3') , fav4: t('slotFav4')  };
   return m[k] || k;
 }
 function findAddrBySlot(slot) {
@@ -3547,23 +3550,23 @@ function renderAddressManager() {
   const list = Store.addresses || [];
   let items = '';
   if (!list.length) {
-    items = '<div style="color:var(--txt3);font-size:.85rem;padding:.8rem 0">' + (t('noAddress') || '暂无地址') + '</div>';
+    items = '<div style="color:var(--txt3);font-size:.85rem;padding:.8rem 0">' + t('noAddress') + '</div>';
   } else {
     list.forEach(function(a, idx) {
       const brief = [a.recipient, a.phone, (a.address || a.detail || a.full_address || '')].filter(Boolean).join(' · ');
       items += '<div class="uc-menu-item" onclick="openAddressDetail(' + Number(a.id) + ')" style="cursor:pointer;border:1px solid var(--border);border-radius:12px;margin-bottom:.55rem;padding:.75rem">'
-        + '<div style="font-size:.88rem;font-weight:600;color:var(--txt)">' + esc(a.recipient || '') + (a.is_default ? ' <span style="font-size:.65rem;color:var(--ac)">默认</span>' : '') + '</div>'
+        + '<div style="font-size:.88rem;font-weight:600;color:var(--txt)">' + esc(a.recipient || '') + (a.is_default ? ' <span style="font-size:.65rem;color:var(--ac)">' + t('slotDefault') + '</span>' : '') + '</div>'
         + '<div style="font-size:.78rem;color:var(--txt2);margin-top:.25rem;line-height:1.35">' + esc(brief) + '</div>'
         + '</div>';
     });
   }
   ov.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;max-width:380px;width:92%;max-height:86vh;overflow:auto">'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem">'
-    + '<div style="font-weight:700;font-size:1.05rem">' + (t('addrManage') || '地址管理') + '</div>'
-    + '<button onclick="closeAddAddress()" style="border:1px solid var(--border);background:var(--bg3);color:var(--txt2);border-radius:8px;padding:.35rem .75rem;cursor:pointer">' + (t('close') || '关闭') + '</button>'
+    + '<div style="font-weight:700;font-size:1.05rem">' + t('addrManage') + '</div>'
+    + '<button onclick="closeAddAddress()" style="border:1px solid var(--border);background:var(--bg3);color:var(--txt2);border-radius:8px;padding:.35rem .75rem;cursor:pointer">' + t('close') + '</button>'
     + '</div>'
     + items
-    + '<button onclick="openAddressDetail(null)" style="width:100%;padding:.75rem;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer;margin-top:.35rem">' + (t('newAddress') || '新建地址') + '</button>'
+    + '<button onclick="openAddressDetail(null)" style="width:100%;padding:.75rem;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer;margin-top:.35rem">' + t('newAddress') + '</button>'
     + '</div>';
 }
 function parseBrAddressToFields(a, prefix) {
@@ -3591,8 +3594,8 @@ function openAddressDetail(id) {
   ov.style.display = 'flex';
   ov.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;max-width:380px;width:92%;max-height:86vh;overflow:auto">'
     + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem">'
-    + '<div style="font-weight:700;font-size:1.05rem">' + (a ? (t('addrDetail') || '地址详情') : (t('newAddress') || '新建地址')) + '</div>'
-    + '<button onclick="renderAddressManager()" style="border:1px solid var(--border);background:var(--bg3);color:var(--txt2);border-radius:8px;padding:.35rem .75rem;cursor:pointer">' + (t('back') || '返回') + '</button>'
+    + '<div style="font-weight:700;font-size:1.05rem">' + (a ? t('addrDetail') : t('newAddress')) + '</div>'
+    + '<button onclick="renderAddressManager()" style="border:1px solid var(--border);background:var(--bg3);color:var(--txt2);border-radius:8px;padding:.35rem .75rem;cursor:pointer">' + t('back') + '</button>'
     + '</div>'
     + '<input type="hidden" id="naId" value="' + (a ? esc(String(a.id)) : '') + '">'
     + '<div class="form-group"><label>' + t('recipientName') + '</label><input type="text" id="naRecipient" maxlength="40" placeholder="' + t('enterRecipient') + '" value="' + esc((a && a.recipient) || '') + '"></div>'
@@ -3606,9 +3609,9 @@ function openAddressDetail(id) {
     + '<div class="form-group"><label>' + t('streetLabel') + '</label><input type="text" id="naStreet" oninput="syncBrAddressPreview(\'na\')"  placeholder="' + t('streetLabel') + '" value=""></div>'
     + '<div class="form-group"><label>' + t('numLabel') + '</label><input type="text" id="naNum" maxlength="12" oninput="this.value=this.value.replace(/[^0-9A-Za-z]/g,\'\')" placeholder="123" value=""></div>'
     + '<div class="form-group"><label>' + t('compLabel') + '</label><input type="text" id="naComp" maxlength="40" placeholder="Apto 101 / Bloco B" value=""></div>'
-    + '<div style="display:flex;flex-wrap:wrap;gap:.45rem;margin:.15rem 0 .95rem">'+ ADDR_SLOTS.map(function(s){ const on = ((a && (a.label || (a.is_default ? 'default' : ''))) || '') === s.k; return '<button type="button" class="naSlot" data-slot="' + s.k + '" onclick="pickNaSlot(this)" style="flex:1 1 auto;min-width:64px;padding:.65rem .45rem;border-radius:10px;border:1.5px solid ' + (on ? 'var(--ac)' : 'var(--border)') + ';background:' + (on ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (on ? '#fff' : 'var(--txt2)') + ';font-size:.82rem;font-weight:600;cursor:pointer">' + s.name + '</button>';}).join('')+ '</div>'+ '<input type="hidden" id="naSlot" value="' + esc((a && (a.label || (a.is_default ? 'default' : 'default'))) || 'default') + '">'
+    + '<div style="display:flex;flex-wrap:wrap;gap:.45rem;margin:.15rem 0 .95rem">'+ getAddrSlots().map(function(s){ const on = ((a && (a.label || (a.is_default ? 'default' : ''))) || '') === s.k; return '<button type="button" class="naSlot" data-slot="' + s.k + '" onclick="pickNaSlot(this)" style="flex:1 1 auto;min-width:64px;padding:.65rem .45rem;border-radius:10px;border:1.5px solid ' + (on ? 'var(--ac)' : 'var(--border)') + ';background:' + (on ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (on ? '#fff' : 'var(--txt2)') + ';font-size:.82rem;font-weight:600;cursor:pointer">' + s.name + '</button>';}).join('')+ '</div>'+ '<input type="hidden" id="naSlot" value="' + esc((a && (a.label || (a.is_default ? 'default' : 'default'))) || 'default') + '">'
     + '<div style="display:flex;gap:.55rem">'
-    + '<button style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--txt2);cursor:pointer" onclick="renderAddressManager()">' + (t('cancel') || '取消') + '</button>'
+    + '<button style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--txt2);cursor:pointer" onclick="renderAddressManager()">' + t('cancel') + '</button>'
     + '<button style="flex:1;padding:.7rem;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer" onclick="saveNewAddress()">' + t('saveAddr') + '</button>'
     + '</div>'
     + '</div>';
