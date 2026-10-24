@@ -363,6 +363,7 @@ a{text-decoration:none;color:inherit}
 .order-no{font-family:'DM Mono',monospace;font-size:.78rem;font-weight:500}
 .order-status{font-size:.65rem;padding:.15rem .45rem;border-radius:6px;font-weight:600}
 .order-items-preview{padding:.7rem 1rem;display:flex;gap:.5rem;overflow-x:auto}
+.order-item-name{flex:1;min-width:0;font-size:.78rem;color:var(--txt2);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .order-item-thumb{width:56px;height:56px;border-radius:8px;background:var(--bg3);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .order-item-thumb img{width:100%;height:100%;object-fit:cover}
 .order-item-thumb .prod-emoji{font-size:1.5rem;opacity:.5}
@@ -661,6 +662,22 @@ input.pre-val:focus, textarea.pre-val:focus { color: var(--txt, #121826); }
 .fgm input:not([type=checkbox]):not([type=radio]):not(:placeholder-shown):focus,
 .fgm textarea:not(:placeholder-shown):focus { color: var(--txt, #121826); }
 
+
+.cat-row-list{margin-bottom:1.15rem;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cat-row{border-bottom:1px solid var(--border)}
+.cat-row:last-child{border-bottom:none}
+.cat-row-main{display:flex;align-items:center;gap:.55rem;padding:.72rem .85rem;background:var(--bg2);cursor:pointer;user-select:none}
+.cat-row-main:hover{background:var(--ac3, var(--bg3))}
+.cat-row-arrow{width:14px;font-size:.75rem;color:var(--txt3);transition:transform var(--tr);flex-shrink:0}
+.cat-row-arrow.open{transform:rotate(90deg)}
+.cat-row-icon{font-size:1.15rem;flex-shrink:0}
+.cat-row-name{flex:1;font-size:.88rem;font-weight:600;color:var(--txt);min-width:0}
+.cat-row-count{font-size:.72rem;color:var(--txt3);font-family:'DM Mono',monospace}
+.cat-row-go{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--ac);font-size:1.1rem;font-weight:600;cursor:pointer;flex-shrink:0}
+.cat-row-go:hover{background:var(--ac3, var(--bg3))}
+.cat-row-kids{background:var(--bg3, var(--bg2))}
+.cat-row-kids .cat-row-name{font-weight:500}
+.cat-row-kids .cat-row-main{padding-left:1.35rem}
 </style>
 </head>
 <body>
@@ -778,7 +795,7 @@ const i18n = {
     selectSize:'选择尺码',selectSpec:'选择规格',piece:'单件',bag:'包',caseUnit:'箱',
     quantity:'数量',productDesc:'商品描述',addToCart:'🛒 加入购物车',buyNow:'⚡ 立即购买',
     // 购物车
-    cartEmpty:'购物车空空如也',cartEmptyHint:'去逛逛，找点心仪的商品吧',goShop:'去逛逛',
+    selectAll:'全选', selectedCount:'已选 {0} 件', cartEmpty:'购物车空空如也',cartEmptyHint:'去逛逛，找点心仪的商品吧',goShop:'去逛逛',
     itemQty:'商品数量',itemTotal:'商品金额',memberLevel:'会员等级',total:'合计',
     bulkDiscount:'✅ 已享受批量优惠（-¥5/件）',
     shippingMethod:'配送方式',pickup:'🏪 自取',onibus:'🚌 Ônibus',
@@ -786,11 +803,11 @@ const i18n = {
     submitOrder:'提交订单',pleaseLogin:'请先登录',checkout:'去结算',checkoutTitle:'订单结算',backToCart:'返回购物车',shippingAddress:'收货地址',noAddress:'暂无收货地址，下单将使用您的注册信息',loginPromptDesc:'登录后才能结算下单',btnCancel:'取消',
     // 订单
     myOrders:'我的订单',noOrders:'暂无订单',noOrdersHint:'快去挑选心仪的商品吧',
-    tabUnpaid:'待付款',tabToShip:'待发货',tabShipped:'正在运输',tabDone:'已完成',tabCancelled:'已取消',
+    tabAll:'全部', tabAfterSale:'售后', tabUnpaid:'待付款',tabToShip:'待发货',tabShipped:'正在运输',tabDone:'已完成',tabCancelled:'已取消',
     navHome:'首页',navCart:'购物车',navOrders:'我的订单',navUser:'我的',navAll:'全部',
     navHomeAll:'全部商品',navTransit:'正在运输',
     stPending:'待确认',stConfirmed:'已确认',stPicking:'备货中',stShipped:'已发货',
-    stDelivered:'已送达',stCompleted:'已完成',stCancelled:'已取消',stDraft:'草稿',cancelOrder:'取消订单',cancelOrderConfirm:'确定取消该订单？取消后库存将回补。',orderCancelled:'订单已取消',cannotCancel:'当前状态不可取消',
+    stDelivered:'已送达',stCompleted:'已完成',stCancelled:'已取消',stDraft:'草稿',cancelOrder:'取消订单', applyRefund:'申请退款', applyReturn:'申请退货', returnRequested:'退货申请已提交', returnConfirm:'是否确认申请退货？', refundRequested:'退款申请已提交', refundConfirm:'是否确认申请退款？',cancelOrderConfirm:'是否确认取消该订单？取消后库存将回补。', phone11:'手机号需为11位数字',orderCancelled:'订单已取消',cannotCancel:'当前状态不可取消',
     stDone:'已完成',stCancel:'已取消',
     payPendingBill:'待上传账单',payPending:'待确认付款',payPaid:'已付款',payRefunded:'已退款',payUnpaid:'未付款',
     billTimeout:'账单超时',
@@ -862,7 +879,7 @@ const i18n = {
     codeSentTo:'验证码已发送到 {0}',
     // 用户中心
     myServices:'📋 我的服务',myOrdersMenu:'我的订单',items:'件',
-    accountInfo:'👤 账号信息',usernameLabel:'用户名',emailLabel:'邮箱',phoneLabel:'手机',
+    accountInfo:'👤 账号信息',usernameLabel:'用户名',emailLabel:'邮箱',phoneLabel:'手机', stateLabel:'州', cityLabel:'城市', bairroLabel:'区', streetLabel:'街道', numLabel:'门牌号（可选）', compLabel:'Complemento（可选）', stateLabel:'Estado', cityLabel:'Cidade', bairroLabel:'Bairro', streetLabel:'Logradouro', numLabel:'Número (opcional)', compLabel:'Complemento (opcional)', cepLabel:'CEP', cepPH:'8 位邮政编码', cepFilled:'已根据 CEP 自动填写地址', cepNotFound:'CEP 未找到，请手动填写', addrManage:'地址管理', addrDetail:'地址详情', back:'返回', newAddress:'新建地址', saveAddr:'保存地址', enterRecipient:'请输入收件人', enterPhone11:'请输入11位手机号', enterAddress:'请输入详细地址', addrSaved:'地址已保存', setDefault:'默认地址', slotDefault:'默认', slotFav1:'常用1', slotFav2:'常用2', slotFav3:'常用3', slotFav4:'常用4', customAddr:'自定义地址', slotSaved:'地址槽位已保存',
     points:'积分',regTime:'注册时间',
     memberLevelInfo:'⭐ 会员等级说明',current:'当前',
     noDiscount:'无折扣',levelReach:'满¥{0}',
@@ -907,7 +924,7 @@ const i18n = {
     navHome:'Início',navCart:'Carrinho',navOrders:'Meus Pedidos',navUser:'Minha conta',navAll:'Todos',
     navHomeAll:'Todos produtos',navTransit:'Em trânsito',
     stPending:'Pendente',stConfirmed:'Confirmado',stPicking:'Preparando',stShipped:'Enviado',
-    stDelivered:'Entregue',stCompleted:'Concluído',stCancelled:'Cancelado',stDraft:'Rascunho',cancelOrder:'Cancelar pedido',cancelOrderConfirm:'Cancelar este pedido? O estoque será devolvido.',orderCancelled:'Pedido cancelado',cannotCancel:'Não é possível cancelar agora',
+    stDelivered:'Entregue',stCompleted:'Concluído',stCancelled:'Cancelado',stDraft:'Rascunho',cancelOrder:'Cancelar pedido',cancelOrderConfirm:'Confirmar cancelamento do pedido? O estoque será devolvido.',orderCancelled:'Pedido cancelado',cannotCancel:'Não é possível cancelar agora',
     stDone:'Concluído',stCancel:'Cancelado',
     payPendingBill:'Aguardando comprovante',payPending:'Aguardando confirmação',payPaid:'Pago',payRefunded:'Reembolsado',payUnpaid:'Não pago',
     billTimeout:'Comprovante expirado',
@@ -979,7 +996,7 @@ const i18n = {
     codeSentTo:'Código enviado para {0}',
     // Central do usuário
     myServices:'📋 Meus Serviços',myOrdersMenu:'Meus Pedidos',items:'itens',
-    accountInfo:'👤 Dados da Conta',usernameLabel:'Usuário',emailLabel:'E-mail',phoneLabel:'Telefone',
+    accountInfo:'👤 Dados da Conta',usernameLabel:'Usuário',emailLabel:'E-mail',phoneLabel:'Telefone', cepLabel:'CEP', cepPH:'CEP 8 dígitos', cepFilled:'Endereço preenchido pelo CEP', cepNotFound:'CEP não encontrado', addrManage:'Gerenciar endereços', addrDetail:'Detalhes do endereço', back:'Voltar', newAddress:'Novo endereço', saveAddr:'Salvar endereço', enterRecipient:'Destinatário', enterPhone11:'Telefone 11 dígitos', enterAddress:'Endereço completo', addrSaved:'Endereço salvo', setDefault:'Endereço padrão', slotDefault:'Padrão', slotFav1:'Fav 1', slotFav2:'Fav 2', slotFav3:'Fav 3', slotFav4:'Fav 4', customAddr:'Endereço personalizado', slotSaved:'Slot de endereço salvo',
     points:'Pontos',regTime:'Cadastro',
     memberLevelInfo:'⭐ Níveis de Membro',current:'Atual',
     noDiscount:'Sem desconto',levelReach:'A partir de ¥{0}',
@@ -1149,7 +1166,55 @@ function loadCart() {
 function saveCart() {
   localStorage.setItem('cs_cart', JSON.stringify(Store.cart));
   updateCartBadge();
+  // 登录后同步到数据库
+  try { syncCartToDb(); } catch(_){}
 }
+async function syncCartToDb() {
+  if (!sb || !Store.member || !Store.member.id) return;
+  const cid = Number(Store.member.id);
+  try {
+    await sb.from('cart_items').delete().eq('customer_id', cid);
+    if (!Store.cart.length) return;
+    const rows = Store.cart.map(function(i) {
+      return {
+        customer_id: cid,
+        product_id: Number(i.productId),
+        qty: Math.max(1, Number(i.qty) || 1),
+        size: i.size || '',
+        spec_type: i.spec_type || 'piece'
+      };
+    });
+    const { error } = await sb.from('cart_items').insert(rows);
+    if (error) throw error;
+  } catch (e) {
+    console.warn('syncCartToDb', e);
+  }
+}
+async function loadCartFromDb() {
+  if (!sb || !Store.member || !Store.member.id) return;
+  try {
+    const { data, error } = await sb.from('cart_items').select('*').eq('customer_id', Number(Store.member.id));
+    if (error) throw error;
+    if (data && data.length) {
+      Store.cart = data.map(function(c) {
+        return {
+          productId: c.product_id,
+          qty: Number(c.qty) || 1,
+          size: c.size || '',
+          spec_type: c.spec_type || 'piece'
+        };
+      });
+      saveCart();
+    } else if (Store.cart.length) {
+      // 本地有货、库空 → 推上去
+      await syncCartToDb();
+    }
+    updateCartBadge();
+  } catch (e) {
+    console.warn('loadCartFromDb', e);
+  }
+}
+
 function updateCartBadge() {
   const count = Store.cart.reduce((s, i) => s + i.qty, 0);
   const dot = $('cartBadge');
@@ -1262,8 +1327,25 @@ async function loadMemberOrders() {
     }
     Store.orders = orders || [];
     if (orders && orders.length) {
-      const ids = orders.map(o => o.id);
-      const { data: items } = await sb.from('shop_order_items').select('*').in('order_id', ids);
+      // shop_order_items 对会员 RLS 不可见，须走 my_order_items
+      let items = [];
+      try {
+        const lists = await Promise.all(orders.map(function(o) {
+          return sb.rpc('my_order_items', {
+            p_order_id: Number(o.id),
+            p_customer_id: Store.member.id
+          }).then(function(r) { return r.data || []; }).catch(function() { return []; });
+        }));
+        lists.forEach(function(arr) {
+          if (Array.isArray(arr)) items = items.concat(arr);
+        });
+      } catch (eItems) { console.warn('order items rpc', eItems); }
+      if (!items.length) {
+        try {
+          const { data: fallback } = await sb.from('shop_order_items').select('*').in('order_id', orders.map(o => o.id));
+          items = fallback || [];
+        } catch (_) {}
+      }
       Store.orderItems = items || [];
     } else {
       Store.orderItems = [];
@@ -1371,13 +1453,44 @@ function toggleCatTree(catId, event) {
 }
 
 // Render a tree node and its children recursively
+function countCatProducts(catId) {
+  const ids = getDescendantIds(catId);
+  return (Store.products || []).filter(p => p.stock > 0 && (p.catIds || []).some(cid => ids.includes(cid))).length;
+}
+function isCatExpanded(id) {
+  if (!window._catExpand) window._catExpand = {};
+  return !!window._catExpand[id];
+}
+function toggleCatExpand(id) {
+  if (!window._catExpand) window._catExpand = {};
+  window._catExpand[id] = !window._catExpand[id];
+  if (typeof renderPage === 'function') renderPage();
+}
+function renderCatRowList(list, depth) {
+  let html = '';
+  list.forEach(function(c) {
+    const kids = getChildren(c.id);
+    const open = isCatExpanded(c.id);
+    const count = countCatProducts(c.id);
+    html += '<div class="cat-row" data-depth="' + depth + '">';
+    html += '<div class="cat-row-main" onclick="toggleCatExpand(' + c.id + ')">';
+    html += '<span class="cat-row-arrow' + (open ? ' open' : '') + '">' + (kids.length ? '▸' : '·') + '</span>';
+    html += '<span class="cat-row-icon">' + (c.icon || '📦') + '</span>';
+    html += '<span class="cat-row-name">' + esc(c.name) + '</span>';
+    html += '<span class="cat-row-count">' + count + ' ' + t('itemsCount') + '</span>';
+    html += '<span class="cat-row-go" onclick="event.stopPropagation();navigateCat(' + c.id + ')" title="' + (t('subCats') || '') + '">›</span>';
+    html += '</div>';
+    if (kids.length && open) {
+      html += '<div class="cat-row-kids">' + renderCatRowList(kids, depth + 1) + '</div>';
+    }
+    html += '</div>';
+  });
+  return html;
+}
 function renderCatTreeNode(cat, currentCatId, depth) {
   const children = getChildren(cat.id);
   const hasChildren = children.length > 0;
-  const count = Store.products.filter(p => {
-    const ids = getDescendantIds(cat.id);
-    return p.catIds.some(cid => ids.includes(cid));
-  }).length;
+  const count = countCatProducts(cat.id);
   const isActive = cat.id === currentCatId;
   const isExpanded = catPath.some(cp => cp.id === cat.id);
 
@@ -1515,7 +1628,7 @@ function buildShopNav() {
   ];
   orderItems.forEach(function(it, idx) {
     const on = page==='orders' && orderSection===it[0] && (it[0]!=='' || orderSection==='');
-    h += '<div class="shop-ni' + (on ? ' on' : '') + '" style="' + (idx ? 'padding-left:1.35rem;' : '') + '" onclick="setOrderSection(\'' + it[0] + '\')">' + (idx ? '' : icons.ord + ' ') + esc(it[1]) + '</div>';
+    h += '<div class="shop-ni' + (on ? ' on' : '') + '" style="' + (idx ? 'padding-left:1.35rem;' : '') + '" onclick="setOrderSection(this.dataset.k)" data-k="' + it[0] + '">' + (idx ? '' : icons.ord + ' ') + esc(it[1]) + '</div>';
   });
   h += '<div class="shop-nl">' + t('navUser') + '</div>';
   h += '<div class="shop-ni' + (page==='user' ? ' on' : '') + '" onclick="navigate(\'user\')">' + icons.user + ' ' + t('navUser') + '</div>';
@@ -1682,18 +1795,7 @@ function renderHome() {
     const catsToShow = currentCatId === 'all' ? getRootCats() : getChildren(currentCatId);
     if (catsToShow.length > 0) {
       html += '<div class="sec-title"><div class="sec-dot"></div>' + (isRoot ? (t('categories') || '分类') : t('subCats')) + '</div>';
-      html += '<div class="subcats-grid">';
-      catsToShow.forEach(c => {
-        const count = Store.products.filter(p => p.stock > 0 && p.catIds.includes(c.id)).length;
-        const hasChildren = getChildren(c.id).length > 0;
-        html += '<div class="subcat-card" onclick="navigateCat(' + c.id + ')">';
-        html += '<span class="sc-icon">' + (c.icon || '📦') + '</span>';
-        html += '<span class="sc-name">' + esc(c.name) + '</span>';
-        html += '<span class="sc-count">' + count + ' ' + t('itemsCount') + '</span>';
-        if (hasChildren) html += '<span class="sc-arrow">▸ ' + t('subCats') + '</span>';
-        html += '</div>';
-      });
-      html += '</div>';
+      html += '<div class="cat-row-list">' + renderCatRowList(catsToShow, 0) + '</div>';
     }
   }
 
@@ -1729,7 +1831,6 @@ function renderHome() {
           if (price < p.price) html += '<span class="prod-original">¥' + fmtPrice(p.price) + '</span>';
           html += '</div>';
           html += '<div class="prod-meta"><span class="prod-stock ' + stockClass + '">' + stockText + '</span>';
-          html += '<div class="prod-cart-btn" onclick="event.stopPropagation();openDetail(' + p.id + ')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>';
           html += '</div></div></div>';
         });
         html += '</div>';
@@ -1791,7 +1892,6 @@ function renderHome() {
         if (price < p.price) html += '<span class="prod-original">¥' + fmtPrice(p.price) + '</span>';
         html += '</div>';
         html += '<div class="prod-meta"><span class="prod-stock ' + stockClass + '">' + stockText + '</span>';
-        html += '<div class="prod-cart-btn" onclick="event.stopPropagation();openDetail(' + p.id + ')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>';
         html += '</div></div></div>';
       });
       html += '</div>';
@@ -2036,6 +2136,41 @@ function getCartTotal() {
   return total;
 }
 
+var _cartSel = {}; // key -> true
+function cartItemKey(productId, size, specType) {
+  return productId + '|' + (size || '') + '|' + (specType || 'piece');
+}
+function toggleCartSelRow(el) {
+  if (!el) return;
+  const pid = Number(el.getAttribute('data-pid') || 0);
+  const size = el.getAttribute('data-size') || '';
+  const spec = el.getAttribute('data-spec') || 'piece';
+  const k = cartItemKey(pid, size, spec);
+  toggleCartSel(pid, size, spec, !_cartSel[k]);
+}
+function toggleCartSelByEl(el) {
+  if (!el) return;
+  toggleCartSel(Number(el.getAttribute('data-pid') || 0), el.getAttribute('data-size') || '', el.getAttribute('data-spec') || 'piece', !!el.checked);
+}
+function toggleCartSel(productId, size, specType, checked) {
+  const k = cartItemKey(productId, size, specType);
+  if (checked) _cartSel[k] = true; else delete _cartSel[k];
+  renderPage();
+}
+function toggleCartSelAll(checked) {
+  _cartSel = {};
+  if (checked) {
+    (Store.cart || []).forEach(function(i) {
+      _cartSel[cartItemKey(i.productId, i.size, i.spec_type)] = true;
+    });
+  }
+  renderPage();
+}
+function selectedCartItems() {
+  return (Store.cart || []).filter(function(i) {
+    return _cartSel[cartItemKey(i.productId, i.size, i.spec_type)];
+  });
+}
 function renderCart() {
   let html = '<div class="sec-title"><div class="sec-dot"></div>' + t('cart') + '</div>';
 
@@ -2046,11 +2181,18 @@ function renderCart() {
 
   const cartTotalQty = Store.cart.reduce((s, i) => s + i.qty, 0);
   html += '<div class="cart-list">';
+  // 全选
+  const allKeys = Store.cart.map(i => cartItemKey(i.productId, i.size, i.spec_type));
+  const selCount = allKeys.filter(k => _cartSel[k]).length;
+  html += '<div style="display:flex;align-items:center;gap:.55rem;padding:.65rem .25rem .85rem"><label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--txt2)"><input type="checkbox" id="cartSelAll"' + (selCount && selCount === allKeys.length ? ' checked' : '') + ' onchange="toggleCartSelAll(this.checked)" style="accent-color:var(--ac);width:18px;height:18px"> ' + (t('selectAll') || '全选') + '</label><span style="font-size:.78rem;color:var(--txt3)">' + selCount + '/' + allKeys.length + '</span></div>';
   Store.cart.forEach(item => {
     const p = Store.products.find(x => x.id === item.productId);
     if (!p) return;
     const price = getCartPrice(p, item.qty, cartTotalQty);
-    html += '<div class="cart-item">';
+    const _k = cartItemKey(item.productId, item.size, item.spec_type);
+    const _ck = !!_cartSel[_k];
+    html += '<div class="cart-item" data-pid="' + item.productId + '" data-size="' + esc(item.size||'') + '" data-spec="' + esc(item.spec_type||'piece') + '" onclick="toggleCartSelRow(this)" style="cursor:pointer">';
+    html += '<label style="display:flex;align-items:center;padding-right:.15rem;cursor:pointer" onclick="event.stopPropagation()"><input type="checkbox" data-pid="' + item.productId + '" data-size="' + esc(item.size||'') + '" data-spec="' + esc(item.spec_type||'piece') + '"' + (_ck ? ' checked' : '') + ' onchange="toggleCartSelByEl(this)" onclick="event.stopPropagation()" style="accent-color:var(--ac);width:18px;height:18px"></label>';
     html += '<div class="cart-item-img">';
     if (p.img) html += '<img src="' + imgSrc(p.img) + '" alt="' + esc(p.name) + '">';
     else html += '<span class="prod-emoji">📦</span>';
@@ -2060,14 +2202,22 @@ function renderCart() {
     html += '<div class="cart-item-sku">' + esc(p.sku || '') + '</div>';
     html += '<div class="cart-item-price">¥' + fmtPrice(price) + '</div>';
     html += '<div class="cart-item-bottom">';
-    html += '<div class="cart-item-qty"><button onclick="updateCartQty(' + p.id + ',-1,\'' + (item.size||'') + '\',\'' + (item.spec_type||'piece') + '\')">−</button><span>' + item.qty + '</span><button onclick="updateCartQty(' + p.id + ',1,\'' + (item.size||'') + '\',\'' + (item.spec_type||'piece') + '\')">+</button></div>';
-    html += '<div class="cart-item-del" onclick="removeFromCart(' + p.id + ',\'' + (item.size||'') + '\',\'' + (item.spec_type||'piece') + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>';
+    html += '<div class="cart-item-qty"><button onclick="event.stopPropagation();updateCartQty(' + p.id + ',-1,\'' + (item.size||'') + '\',\'' + (item.spec_type||'piece') + '\')">−</button><span>' + item.qty + '</span><button onclick="event.stopPropagation();updateCartQty(' + p.id + ',1,\'' + (item.size||'') + '\',\'' + (item.spec_type||'piece') + '\')">+</button></div>';
+    html += '<div class="cart-item-del" onclick="event.stopPropagation();removeFromCart(' + p.id + ',\'' + (item.size||'') + '\',\'' + (item.spec_type||'piece') + '\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></div>';
     html += '</div></div></div>';
   });
   html += '</div>';
 
   // Summary
-  const goodsTotal = getCartTotal();
+  const _sel = selectedCartItems();
+  const _sumItems = _sel.length ? _sel : Store.cart;
+  const _sumQty = _sumItems.reduce((s, i) => s + i.qty, 0);
+  let goodsTotal = 0;
+  const _sumQtyAll = Store.cart.reduce((s, i) => s + i.qty, 0);
+  _sumItems.forEach(i => {
+    const pp = Store.products.find(x => x.id === i.productId);
+    if (pp) goodsTotal += getCartPrice(pp, i.qty, _sumQtyAll) * i.qty;
+  });
   const shipFee = getShipFee();
   const total = goodsTotal + shipFee;
   html += '<div class="cart-summary">';
@@ -2250,22 +2400,40 @@ function gotoLogin() {
 async function goCheckout() {
   if (!Store.member) { afterLoginPage = 'checkout'; showLoginPrompt(); return; }
   if (Store.cart.length === 0) return;
+  const _selCart = (typeof selectedCartItems === 'function' ? selectedCartItems() : []);
+  const _useCart = _selCart.length ? _selCart : Store.cart;
   if (window._checkoutBusy) return;
   window._checkoutBusy = true;
   const btn = document.querySelector('[onclick*="goCheckout"]');
   if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
 
-  const total = getCartTotal();
+  let goodsTotal = 0;
+  const _gQty = _useCart.reduce((s, i) => s + i.qty, 0);
+  _useCart.forEach(function(i) {
+    const pp = Store.products.find(x => x.id === i.productId);
+    if (pp) goodsTotal += getCartPrice(pp, i.qty, _gQty) * i.qty;
+  });
+  const shipFee = getShipFee();
+  const total = goodsTotal + shipFee;
   try {
     const selAddrEl = document.querySelector('input[name="shipAddr"]:checked');
     const defaultAddr = selAddrEl ? Store.addresses.find(a => String(a.id) === selAddrEl.value) : (Store.addresses.find(a => a.is_default) || Store.addresses[0]);
     // 优先用结算页手动填写的地址
-    const ckName = (document.getElementById('ckName')?.value || '').trim();
-    const ckPhone = (document.getElementById('ckPhone')?.value || '').trim();
-    const ckAddr = (document.getElementById('ckAddr')?.value || '').trim();
-    const shipName = ckName || (defaultAddr ? defaultAddr.recipient : (Store.member?.name || Store.member?.display_name || ''));
-    const shipPhone = ckPhone || (defaultAddr ? defaultAddr.phone : (Store.member?.phone || ''));
-    const shipAddr = ckAddr || (defaultAddr ? (defaultAddr.address || defaultAddr.detail || defaultAddr.full_address || '') : '');
+    const _slot = window._ckAddrSlot || 'default';
+    const _slotAddr = (_slot === 'custom') ? null : ((typeof findAddrBySlot === 'function' ? findAddrBySlot(_slot) : null) || defaultAddr);
+    const ckName = (_slot === 'custom') ? (document.getElementById('ckName')?.value || '').trim() : '';
+    const ckPhone = (_slot === 'custom') ? (document.getElementById('ckPhone')?.value || '').trim() : '';
+    const ckAddr = (_slot === 'custom') ? ((typeof composeBrAddress === 'function' ? composeBrAddress('ck') : '') || (document.getElementById('ckAddr')?.value || '').trim()) : '';
+    const shipName = (_slot !== 'custom' && _slotAddr && _slotAddr.recipient) ? _slotAddr.recipient : (ckName || (defaultAddr ? defaultAddr.recipient : (Store.member?.name || Store.member?.display_name || '')));
+    const shipPhone = (_slot !== 'custom' && _slotAddr && _slotAddr.phone) ? _slotAddr.phone : (ckPhone || (defaultAddr ? defaultAddr.phone : (Store.member?.phone || '')));
+    const shipAddr = (_slot !== 'custom' && _slotAddr && (_slotAddr.address || _slotAddr.detail || _slotAddr.full_address)) ? (_slotAddr.address || _slotAddr.detail || _slotAddr.full_address) : (ckAddr || (defaultAddr ? (defaultAddr.address || defaultAddr.detail || defaultAddr.full_address || '') : ''));
+    if (ckPhone && !/^\d{11}$/.test(ckPhone)) {
+      toast(t('phone11') || '手机号需为11位数字', 'info');
+      window._checkoutBusy = false;
+      const btnP = document.querySelector('[onclick*="goCheckout"]');
+      if (btnP) { btnP.disabled = false; btnP.style.opacity = ''; }
+      return;
+    }
     if (!shipAddr) {
       toast(t('enterAddr') || '请填写收货地址', 'info');
       window._checkoutBusy = false;
@@ -2281,8 +2449,8 @@ async function goCheckout() {
       if (!onibusName.trim()) { toast(t('enterOnibusClientName'), 'error'); return; }
     }
 
-    const cartTotalQty = Store.cart.reduce((s, i) => s + i.qty, 0);
-    const items = Store.cart.map(item => {
+    const cartTotalQty = _useCart.reduce((s, i) => s + i.qty, 0);
+    const items = _useCart.map(item => {
       const p = Store.products.find(x => x.id === item.productId);
       const price = getCartPrice(p, item.qty, cartTotalQty);
       return {
@@ -2346,6 +2514,7 @@ async function goCheckout() {
     Store.member.order_count = (Number(Store.member.order_count) || 0) + 1;
     Store.cart = [];
     saveCart();
+    try { if (Store.member && Store.member.id) await sb.from('cart_items').delete().eq('customer_id', Number(Store.member.id)); } catch(_){}
 
     await loadMemberOrders();
     toast(t('orderSubmitted'), 'success');
@@ -2368,39 +2537,55 @@ function renderCheckout() {
     html += '<div class="cart-empty"><p>' + t('cartEmpty') + '</p><div class="go-shop" onclick="navigate(\'home\')">' + t('goShop') + '</div></div>';
     return html;
   }
-  // 收货地址
+  // 收货地址：默认/常用1-4/自定义
   html += '<div class="cart-summary">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + t('shippingAddress') + '</div>';
-  if (Store.addresses.length) {
-    let addrChecked = false;
-    Store.addresses.forEach(a => {
-      const ck = (!addrChecked && (a.is_default || Store.addresses.indexOf(a) === 0)) ? ' checked' : '';
-      if (ck) addrChecked = true;
-      html += '<label style="display:flex;align-items:center;gap:.5rem;padding:.55rem;border:1.5px solid ' + (a.is_default ? 'var(--ac)' : 'var(--border)') + ';border-radius:var(--r);margin-bottom:.45rem;cursor:pointer"><input type="radio" name="shipAddr" value="' + a.id + '"' + ck + ' style="accent-color:var(--ac)"><span style="font-size:.83rem">' + esc(a.recipient || '') + (a.phone ? ' · ' + esc(a.phone) : '') + (a.address || a.detail || a.full_address ? ' · ' + esc(a.address || a.detail || a.full_address || '') : '') + '</span></label>';
-    });
-  }
-  // 手动填写地址（无地址时默认展开）
-  html += '<div class="cart-summary" style="margin-top:.55rem">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (Store.addresses.length ? t('enterAddr') || '填写地址' : t('shippingAddress')) + '</div>';
-  html += '<div class="form-group"><label>' + (t('name') || '姓名') + '</label><input type="text" id="ckName" placeholder="' + (t('name') || '姓名') + '" value="' + esc((Store.member && (Store.member.name || Store.member.display_name)) || '') + '"></div>';
-  html += '<div class="form-group"><label>' + (t('phone') || '电话') + '</label><input type="tel" id="ckPhone" placeholder="' + (t('phone') || '电话') + '" value="' + esc((Store.member && Store.member.phone) || '') + '"></div>';
-  html += '<div class="form-group"><label>' + (t('shippingAddress') || '收货地址') + '</label><textarea id="ckAddr" rows="3" placeholder="' + (t('enterAddr') || '详细地址') + '" style="width:100%;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--r);font-size:.88rem;resize:vertical;background:var(--bg2);color:var(--txt)"></textarea></div>';
-  html += '</div>';
-  html += '</div>';
-  // Shipping method selector
-  html += '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;margin-bottom:1rem">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + t('shippingMethod') + '</div>';
-  html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem">';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="motoboy" checked onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Motoboy</label>';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="correios" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Correios</label>';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="pickup" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)">' + t('pickup') + '</label>';
-  html += '<label style="display:flex;align-items:center;gap:.4rem;padding:.5rem;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all var(--tr)"><input type="radio" name="shipMethod" value="onibus" onchange="onShipMethodChange(this.value)" style="accent-color:var(--ac)"> Ônibus</label>';
-  html += '</div>';
-  // Onibus fields (hidden by default)
-  html += '<div id="onibusFields" style="display:none;margin-top:.6rem">';
-  html += '<div style="margin-bottom:.5rem"><input type="text" id="onibusNameInput" placeholder="' + t('onibusNamePH') + '" style="width:100%;padding:.5rem .8rem;background:var(--bg3);border:1.5px solid var(--border);border-radius:var(--r);font-size:.85rem"></div>';
-  html += '<div><div style="font-size:.72rem;color:var(--txt3);margin-bottom:.3rem">' + t('onibusScheduleImg') + '</div><div class="ib" id="onibusImgIB" onclick="document.getElementById(\'onibusImgIF\').click()" style="width:80px;height:80px"><span class="ia">+</span><input type="file" id="onibusImgIF" accept="image/*" onchange="hImg(this,\'onibusImgIB\',\'onibusImgData\')" /></div></div>';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.55rem;flex-wrap:wrap">';
+  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em">' + t('shippingAddress') + '</div>';
+  html += '<div style="display:flex;gap:.35rem;flex-wrap:wrap">';
+  const slotOpts = (typeof ADDR_SLOTS !== 'undefined' && ADDR_SLOTS) ? ADDR_SLOTS : [
+    { k: 'default', name: t('slotDefault') || '默认' },
+    { k: 'fav1', name: t('slotFav1') || '常用1' },
+    { k: 'fav2', name: t('slotFav2') || '常用2' },
+    { k: 'fav3', name: t('slotFav3') || '常用3' },
+    { k: 'fav4', name: t('slotFav4') || '常用4' }
+  ];
+  const activeSlot = window._ckAddrSlot || 'default';
+  slotOpts.forEach(function(s) {
+    const on = activeSlot === s.k;
+    html += '<button type="button" onclick="setCkAddrSlot(this.dataset.slot)" data-slot="' + s.k + '" style="padding:.38rem .62rem;border-radius:999px;border:1.5px solid ' + (on ? 'var(--ac)' : 'var(--border)') + ';background:' + (on ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (on ? '#fff' : 'var(--txt2)') + ';font-size:.75rem;font-weight:600;cursor:pointer">' + s.name + '</button>';
+  });
+  const onCustom = activeSlot === 'custom';
+  html += '<button type="button" onclick="setCkAddrSlot(this.dataset.slot)" data-slot="custom" style="padding:.38rem .62rem;border-radius:999px;border:1.5px solid ' + (onCustom ? 'var(--ac)' : 'var(--border)') + ';background:' + (onCustom ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (onCustom ? '#fff' : 'var(--txt2)') + ';font-size:.75rem;font-weight:600;cursor:pointer">' + (t('customAddr') || '自定义地址') + '</button>';
   html += '</div></div>';
+
+  // 对应槽位地址展示
+  if (activeSlot !== 'custom') {
+    const sa = (typeof findAddrBySlot === 'function' ? findAddrBySlot(activeSlot) : null)
+      || (Store.addresses || []).find(function(x) { return x.is_default; })
+      || (Store.addresses || [])[0];
+    if (sa) {
+      html += '<div style="padding:.65rem .8rem;border:1.5px solid var(--ac);border-radius:var(--r);background:var(--ac3, var(--bg3));font-size:.85rem;line-height:1.45">'
+        + '<div style="font-weight:600">' + esc(sa.recipient || '') + (sa.phone ? ' · ' + esc(sa.phone) : '') + '</div>'
+        + '<div style="color:var(--txt2);margin-top:.25rem">' + esc(sa.address || sa.detail || sa.full_address || '') + '</div>'
+        + '</div>';
+    } else {
+      html += '<div style="color:var(--txt3);font-size:.82rem;padding:.5rem 0">' + (t('noAddress') || '暂无地址') + '</div>';
+    }
+  } else {
+    // 自定义地址表单（仅选中时展开）
+    html += '<div id="ckCustomAddrBox" style="margin-top:.35rem">';
+    html += '<div class="form-group"><label>' + (t('name') || '姓名') + '</label><input type="text" id="ckName" maxlength="40" placeholder="' + (t('name') || '姓名') + '" value="' + esc((Store.member && (Store.member.name || Store.member.display_name)) || '') + '"></div>';
+    html += '<div class="form-group"><label>' + (t('phone') || '电话') + '</label><input type="tel" id="ckPhone" maxlength="11" inputmode="numeric" placeholder="' + (t('phone') || '电话') + '" value="' + esc((Store.member && Store.member.phone) || '') + '"></div>';
+    html += '<div class="form-group"><label>' + (t('cepLabel') || 'CEP') + '</label><input type="tel" id="ckCep" maxlength="8" inputmode="numeric" placeholder="' + (t('cepPH') || 'CEP') + '" oninput="this.value=this.value.replace(/\D/g,\'\')" onblur="autoFillBrCep(this,\'ck\')"></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div class="form-group"><label>' + (t('stateLabel') || 'UF') + '</label><input type="text" id="ckUf" maxlength="2" placeholder="UF"></div><div class="form-group"><label>' + (t('cityLabel') || 'Cidade') + '</label><input type="text" id="ckCity" placeholder="' + (t('cityLabel') || 'Cidade') + '"></div></div>';
+    html += '<div class="form-group"><label>' + (t('bairroLabel') || 'Bairro') + '</label><input type="text" id="ckBairro" placeholder="' + (t('bairroLabel') || 'Bairro') + '"></div>';
+    html += '<div class="form-group"><label>' + (t('streetLabel') || 'Logradouro') + '</label><input type="text" id="ckStreet" placeholder="' + (t('streetLabel') || 'Logradouro') + '"></div>';
+    html += '<div class="form-group"><label>' + (t('numLabel') || 'Número (opcional)') + '</label><input type="text" id="ckNum" maxlength="12" oninput="this.value=this.value.replace(/[^0-9A-Za-z]/g,\'\')" placeholder="123"></div>';
+    html += '<div class="form-group"><label>' + (t('compLabel') || 'Complemento (opcional)') + '</label><input type="text" id="ckComp" maxlength="40" placeholder="Apto 101 / Bloco B"></div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
   // 商品清单
   const cartTotalQty = Store.cart.reduce((s, i) => s + i.qty, 0);
   html += '<div class="cart-list">';
@@ -2454,9 +2639,9 @@ function renderCheckout() {
 function orderTabOf(o) {
   const st = String((o && o.status) || '').toLowerCase();
   const pay = String((o && o.payment_status) || '').toLowerCase();
-  if (st === 'cancelled' || st === 'cancel') return 'cancelled';
-  if (st === 'shipped') return 'shipped';
-  if (st === 'delivered' || st === 'completed' || st === 'done') return 'done';
+  if (st === 'cancelled' || st === 'cancel') return 'aftersale';
+  if (pay === 'refund_requested' || pay === 'refunded' || pay === 'return_requested') return 'aftersale';
+  if (st === 'shipped' || st === 'delivered' || st === 'completed' || st === 'done') return 'done';
   if (pay === 'pending_bill') return 'unpaid';
   return 'toShip';
 }
@@ -2490,84 +2675,77 @@ function orderStatusBadge(order) {
   return statusMap[order.status] || statusMap.pending;
 }
 
-function renderOrderCard(order) {
-  const st = orderStatusBadge(order);
-  const needsAddr = (order.pickup_method === 'motoboy' || order.pickup_method === 'correios') && !order.shipping_address && (order.status === 'pending' || order.status === 'picking');
-  const needsOnibus = order.pickup_method === 'onibus' && !order.onibus_schedule_img && (order.status === 'pending' || order.status === 'picking');
-  const items = Store.orderItems.filter(i => i.order_id === order.id);
-  let html = '<div class="order-card" data-oid="' + esc(String(order.id)) + '" onclick="event.stopPropagation();openOrderDetail(this.getAttribute(\'data-oid\'))" style="margin-bottom:.75rem;user-select:none;-webkit-user-select:none">';
-  html += '<div class="order-card-hdr"><span class="order-no">' + esc(order.order_no) + '</span><div style="display:flex;align-items:center;gap:.4rem">' + (needsAddr ? '<span style="font-size:.65rem;color:var(--orange);font-weight:500">' + t('warnMissingAddr') + '</span>' : '') + (needsOnibus ? '<span style="font-size:.65rem;color:var(--orange);font-weight:500">' + t('warnMissingSchedule') + '</span>' : '') + '<span class="order-status" style="background:' + st.bg + ';color:' + st.color + '">' + st.label + '</span></div></div>';
-  html += '<div class="order-items-preview">';
-  items.slice(0, 4).forEach(item => {
-    html += '<div class="order-item-thumb">';
-    if (item.product_image) html += '<img src="' + esc(item.product_image) + '">';
-    else html += '<span class="prod-emoji">📦</span>';
-    html += '</div>';
-  // 付款账号 + 账单（结算页）
-  html += '<div class="cart-summary" style="margin-top:.75rem">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('paymentAccount') || '付款账号') + '</div>';
-  html += renderPaymentAccounts(getCartTotal()) || '<div style="color:var(--txt3);font-size:.82rem">' + (t('noPayAccount') || '暂无付款账号') + '</div>';
-  html += '</div>';
-  html += '<div class="cart-summary" style="margin-top:.55rem">';
-  html += '<div style="font-size:.75rem;font-weight:500;color:var(--txt2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">' + (t('uploadBill') || '上传付款账单') + '</div>';
-  html += '<div style="font-size:.72rem;color:var(--txt3);margin-bottom:.5rem">' + (t('uploadBillHint') || '点击上传付款截图/账单') + '</div>';
-  html += '<div class="ib" id="ckBillIB" onclick="document.getElementById(\'ckBillIF\').click()" style="width:96px;height:96px;border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden"><span class="ia" style="font-size:1.5rem;color:var(--txt3)">+</span><input type="file" id="ckBillIF" accept="image/*" style="display:none" onchange="hImg(this,\'ckBillIB\',\'billImgData\')"></div>';
-  html += '</div>';
-  // 金额明细（含配送费）
-  const goodsTotal = getCartTotal();
-  const shipFee = 0;
-  const total = goodsTotal + shipFee;
-  html += '<div class="cart-summary">';
-  html += '<div class="cart-summary-row"><span>' + t('itemQty') + '</span><span>' + cartTotalQty + ' ' + t('pieces') + '</span></div>';
-  html += '<div class="cart-summary-row"><span>' + t('itemTotal') + '</span><span>￥' + fmtPrice(goodsTotal) + '</span></div>';
-  html += '<div class="cart-summary-row"><span>' + (t('shippingCost') || '配送费') + '</span><span>￥' + fmtPrice(shipFee) + '</span></div>';
-  if (Store.member) {
-    const level = Store.levels.find(l => l.id === Store.member.member_level);
-    if (level) html += '<div class="cart-summary-row"><span>' + t('memberLevel') + '</span><span>' + level.icon + ' ' + esc(level.name) + '</span></div>';
-  }
-  html += '<div class="cart-summary-row total"><span>' + t('total') + '</span><span class="cs-val">￥' + fmtPrice(total) + '</span></div>';
-  if (cartTotalQty >= 36 || Store.cart.some(i => i.qty >= 12)) {
-    html += '<div style="color:var(--green);font-size:.78rem;text-align:right;padding-top:.3rem">' + t('bulkDiscount') + '</div>';
-  }
-  html += '</div>';
-
-  });
-  if (items.length > 4) html += '<div class="order-item-more">+' + (items.length - 4) + '</div>';
-  html += '</div>';
-  html += '<div class="order-card-ftr"><span class="order-total">' + t('orderTotal') + ' <span>¥' + fmtPrice(order.total) + '</span></span><span class="order-date">' + fmtDate(order.created_at) + '</span></div>';
-  html += '</div>';
-  return html;
-}
-
 function renderOrders() {
   let html = '<div class="sec-title"><div class="sec-dot"></div>' + t('myOrders') + '</div>';
 
   const SECTIONS = [
+    { k: '', label: t('tabAll') || '全部' },
     { k: 'unpaid', label: t('tabUnpaid') },
     { k: 'toShip', label: t('tabToShip') },
-    { k: 'shipped', label: t('tabShipped') },
     { k: 'done', label: t('tabDone') },
-    { k: 'cancelled', label: t('tabCancelled') }
+    { k: 'aftersale', label: t('tabAfterSale') || '售后' }
   ];
 
-  const all = (Store.orders || []).filter(o => !orderSection || orderTabOf(o) === orderSection);
-  if (!all.length) {
+  html += '<div class="order-tabs">';
+  SECTIONS.forEach(function(sec) {
+    const on = (orderSection || '') === sec.k;
+    const cnt = (Store.orders || []).filter(function(o) { return !sec.k || orderTabOf(o) === sec.k; }).length;
+    html += '<div class="order-tab' + (on ? ' on' : '') + '" onclick="setOrderSection(this.dataset.k)" data-k="' + sec.k + '">'
+      + sec.label + (cnt ? '<span class="ot-n">' + cnt + '</span>' : '') + '</div>';
+  });
+  html += '</div>';
+
+  const list = (Store.orders || []).filter(function(o) { return !orderSection || orderTabOf(o) === orderSection; });
+  if (!list.length) {
     html += '<div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><p>' + t('noOrders') + '</p><p class="empty-hint">' + t('noOrdersHint') + '</p></div>';
     return html;
   }
+  list.forEach(function(order) { html += renderOrderCard(order); });
+  return html;
+}
 
-  const secList = orderSection ? SECTIONS.filter(x => x.k === orderSection) : SECTIONS;
-  secList.forEach(sec => {
-    const list = all.filter(o => orderTabOf(o) === sec.k);
-    html += '<div class="sec-title" style="margin:1.15rem 0 .65rem;font-size:.92rem"><div class="sec-dot"></div>' + esc(sec.label)
-      + ' <span style="margin-left:.35rem;font-size:.75rem;color:var(--txt3)">(' + list.length + ')</span></div>';
-    if (!list.length) {
-      html += '<div class="empty-hint" style="padding:.55rem .85rem;background:var(--bg2);border-radius:var(--r);color:var(--txt3);font-size:.78rem">' + t('noOrders') + '</div>';
-      return;
-    }
-    list.forEach(order => { html += renderOrderCard(order); });
+function formatOrderNote(note) {
+  let n = String(note || '');
+  n = n.replace(/(^|\|\s*)supType:[^|]*/gi, ' ');
+  n = n.replace(/(^|\|\s*)bill_paid:[^|]*/gi, ' ');
+  n = n.replace(/\s*\|\s*\|+/g, ' | ').replace(/^[\s|]+|[\s|]+$/g, '');
+  return n.trim();
+}
+function renderOrderCard(order) {
+  const st = orderStatusBadge(order);
+  const items = (Store.orderItems || []).filter(i => Number(i.order_id) === Number(order.id));
+  const qty = items.reduce(function(s, i) { return s + Number(i.qty || 0); }, 0);
+  const total = order.total || order.subtotal || 0;
+  let html = '<div class="order-card" data-oid="' + esc(String(order.id)) + '" onclick="event.stopPropagation();openOrderDetail(this.getAttribute(\'data-oid\'))" style="margin-bottom:.75rem;user-select:none;-webkit-user-select:none;cursor:pointer">';
+  // 第一行：编号 / 数量 / 总价 / 状态
+  html += '<div class="order-card-hdr">';
+  html += '<span class="order-no">' + esc(order.order_no) + '</span>';
+  html += '<span class="order-qty">' + qty + ' ' + t('items') + '</span>';
+  html += '<span class="order-total">¥' + fmtPrice(total) + '</span>';
+  html += '<span class="order-status" style="background:' + st.bg + ';color:' + st.color + '">' + st.label + '</span>';
+  html += '</div>';
+  // 第二行：略缩图，最多 3，超出用 …
+  html += '<div class="order-items-preview">';
+  const shown = items.slice(0, 3);
+  shown.forEach(function(item) {
+    html += '<div class="order-item-thumb">';
+    if (item.product_image) html += '<img src="' + imgSrc(item.product_image) + '" alt="">';
+    else html += '<span class="prod-emoji">📦</span>';
+    html += '</div>';
   });
-
+  if (items.length > 3) {
+    html += '<div class="order-item-more">···</div>';
+  }
+  html += '</div>';
+  const canCancel = order.status === 'pending' || order.status === 'confirmed';
+  const canRefund = (order.status === 'done' || order.status === 'completed' || order.status === 'delivered') && order.payment_status !== 'refunded' && order.payment_status !== 'refund_requested' && order.payment_status !== 'return_requested';
+  if (canCancel || canRefund) {
+    html += '<div style="display:flex;gap:.45rem;margin-top:.65rem;padding:0 1rem 1rem">';
+    if (canCancel) html += '<button class="btn" style="flex:1;padding:.55rem;border-radius:10px;border:1px solid #ef444460;background:#ef444420;color:#ef4444;font-size:.8rem;cursor:pointer" onclick="event.stopPropagation();cancelShopOrder(' + order.id + ')">' + t('cancelOrder') + '</button>';
+    if (canRefund) html += '<button class="btn" style="flex:1;padding:.55rem;border-radius:10px;border:1px solid #f59e0b60;background:#f59e0b20;color:#f59e0b;font-size:.8rem;cursor:pointer" onclick="event.stopPropagation();requestRefund(' + order.id + ')">' + t('applyRefund') + '</button>';
+    html += '</div>';
+  }
+  html += '</div>';
   return html;
 }
 
@@ -2655,8 +2833,9 @@ function openOrderDetail(orderId) {
   } else if (canEditInfo && order.pickup_method !== 'pickup') {
     html += '<div class="od-section" style="background:var(--orange2);border:1.5px solid rgba(245,158,11,.3);border-radius:var(--r);padding:.8rem"><div class="od-label" style="color:var(--orange)">' + t('missingAddrHint') + '</div><button class="btn-add-cart" style="width:100%;margin-top:.4rem" onclick="editOrderAddr(' + order.id + ')">' + t('fillAddr') + '</button></div>';
   }
-  if (order.note) {
-    html += '<div class="od-section"><div class="od-label">' + t('orderNote') + '</div><p style="font-size:.85rem;color:var(--txt2)">' + esc(order.note) + '</p></div>';
+  const _noteShow = (typeof formatOrderNote === 'function' ? formatOrderNote(order.note) : String(order.note || ''));
+  if (_noteShow) {
+    html += '<div class="od-section"><div class="od-label">' + t('orderNote') + '</div><p style="font-size:.85rem;color:var(--txt2)">' + esc(_noteShow) + '</p></div>';
   }
 
   // Payment accounts display
@@ -2703,6 +2882,15 @@ function openOrderDetail(orderId) {
   if (order.status === 'pending' || order.status === 'confirmed') {
     html += '<div style="padding:0 1.2rem 1.2rem"><button class="btn-add-cart" style="width:100%;background:#ef444420;border:1.5px solid #ef444460;color:#ef4444" onclick="cancelShopOrder(' + order.id + ')">' + t('cancelOrder') + '</button></div>';
   }
+  if ((order.status === 'done' || order.status === 'completed' || order.status === 'delivered') && order.payment_status !== 'refunded' && order.payment_status !== 'refund_requested' && order.payment_status !== 'return_requested') {
+    html += '<div style="padding:0 1.2rem 1.2rem"><button class="btn-add-cart" style="width:100%;background:#f59e0b20;border:1.5px solid #f59e0b60;color:#f59e0b" onclick="requestRefund(' + order.id + ')">' + t('applyRefund') + '</button></div>';
+  }
+  if ((order.status === 'shipped' || order.status === 'delivered' || order.status === 'enviado') && order.payment_status !== 'return_requested' && order.payment_status !== 'refunded' && order.payment_status !== 'refund_requested') {
+    html += '<div style="padding:0 1.2rem 1.2rem"><button class="btn-add-cart" style="width:100%;background:#7c5bf020;border:1.5px solid #7c5bf060;color:#7c5bf0" onclick="requestReturn(' + order.id + ')">' + t('applyReturn') + '</button></div>';
+  }
+  if (order.payment_status === 'refund_requested' || order.payment_status === 'refunded') {
+    html += '<div style="padding:0 1.2rem 1.2rem"><div style="background:#f59e0b15;border:1.5px solid #f59e0b40;border-radius:var(--r);padding:.75rem 1rem;font-size:.85rem;color:#f59e0b">' + t('refundRequested') + '</div></div>';
+  }
 
   $('orderDetailModal').innerHTML = html;
   $('orderDetailModal').style.display = 'block';
@@ -2712,6 +2900,50 @@ function closeOrderDetail() {
   $('orderDetailModal').style.display = 'none';
 }
 
+async function requestReturn(orderId) {
+  const id = Number(orderId);
+  const order = (Store.orders || []).find(o => Number(o.id) === id);
+  if (!order) return;
+  if (!confirm(t('returnConfirm') || '是否确认申请退货？')) return;
+  try {
+    const { error } = await sb.from('shop_orders').update({
+      payment_status: 'return_requested'
+    }).eq('id', id);
+    if (error) throw error;
+    order.payment_status = 'return_requested';
+    toast(t('returnRequested') || '退货申请已提交', 'success');
+    if (typeof loadMemberOrders === 'function') {
+      try { await loadMemberOrders(); } catch(_){}
+    }
+    closeOrderDetail();
+    if (typeof renderPage === 'function') renderPage();
+  } catch (e) {
+    console.error('request return', e);
+    toast(t('updateFailed') + (e.message || ''), 'error');
+  }
+}
+async function requestRefund(orderId) {
+  const id = Number(orderId);
+  const order = (Store.orders || []).find(o => Number(o.id) === id);
+  if (!order) return;
+  if (!confirm(t('refundConfirm') || '是否确认申请退款？')) return;
+  try {
+    const { error } = await sb.from('shop_orders').update({
+      payment_status: 'refund_requested'
+    }).eq('id', id);
+    if (error) throw error;
+    order.payment_status = 'refund_requested';
+    toast(t('refundRequested') || '退款申请已提交', 'success');
+    if (typeof loadMemberOrders === 'function') {
+      try { await loadMemberOrders(); } catch(_){}
+    }
+    closeOrderDetail();
+    if (typeof renderPage === 'function') renderPage();
+  } catch (e) {
+    console.error('request refund', e);
+    toast(t('updateFailed') + (e.message || ''), 'error');
+  }
+}
 async function cancelShopOrder(orderId) {
   const id = Number(orderId);
   const order = (Store.orders || []).find(o => Number(o.id) === id);
@@ -2857,7 +3089,7 @@ function renderAuth() {
     html += '<div class="form-group"><label>' + t('name') + '</label><input type="text" id="authName" placeholder="' + t('namePH') + '"></div>';
     html += '<div class="form-group"><label>' + t('username') + '</label><input type="text" id="authUsername" placeholder="' + t('usernamePH') + '"><div class="input-hint">' + t('usernameHint') + '</div></div>';
     html += '<div class="form-group"><label>' + t('email') + '</label><input type="email" id="authEmail" placeholder="' + t('emailPH') + '"><div class="input-hint">' + t('emailVerifyHint') + '</div></div>';
-    html += '<div class="form-group"><label>' + t('phone') + '</label><input type="tel" id="authPhone" placeholder="' + t('phonePH') + '"><div class="input-hint">' + t('phoneHint') + '</div></div>';
+    html += '<div class="form-group"><label>' + t('phone') + '</label><input type="tel" id="authPhone" maxlength="11" inputmode="numeric" pattern="[0-9]*" placeholder="' + t('phonePH') + '"><div class="input-hint">' + t('phoneHint') + '</div></div>';
     html += '<div class="form-group"><label>' + t('password') + '</label><input type="password" id="authPwd" placeholder="' + t('pwdPH') + '"></div>';
     html += '<div class="form-group"><label>' + t('confirmPwd') + '</label><input type="password" id="authPwd2" placeholder="' + t('confirmPwdPH') + '"></div>';
     html += '<button class="auth-submit" onclick="doRegister()">' + t('sendCodeAndRegister') + '</button>';
@@ -2967,6 +3199,7 @@ async function doRegister() {
   const pwd2 = ($('authPwd2') || {}).value;
 
   if (!email) { errEl.textContent = t('enterEmail'); errEl.classList.add('show'); return; }
+  if (phone && !/^\d{11}$/.test(phone)) { errEl.textContent = t('phone11') || '手机号需为11位数字'; errEl.classList.add('show'); return; }
   if (!username) { errEl.textContent = t('setUsername'); errEl.classList.add('show'); return; }
   if (!pwd || pwd.length < 6) { errEl.textContent = t('pwdMin6'); errEl.classList.add('show'); return; }
   if (pwd !== pwd2) { errEl.textContent = t('pwdMismatch'); errEl.classList.add('show'); return; }
@@ -3119,7 +3352,7 @@ function openEditProfile(mode) {
     html += '<button class="auth-submit" onclick="confirmEditEmail()">' + t('confirmEdit') + '</button></div>';
   } else {
     html += '<div class="form-group"><label>' + t('currentPhone') + '</label><input type="text" readonly value="' + esc(m.phone || t('notBound')) + '" style="background:var(--bg3);color:var(--txt3)"></div>';
-    html += '<div class="form-group"><label>' + t('newPhone') + '</label><input type="tel" id="editNewPhone" placeholder="13800138000"></div>';
+    html += '<div class="form-group"><label>' + t('newPhone') + '</label><input type="tel" id="editNewPhone" maxlength="11" inputmode="numeric" pattern="[0-9]*" placeholder="13800138000"></div>';
     html += '<button class="auth-submit" onclick="confirmEditPhone()">' + t('confirmEdit') + '</button>';
   }
   html += '</div></div>';
@@ -3209,6 +3442,7 @@ async function confirmEditPhone() {
   const errEl = $('editProfileError');
   const newPhone = ($('editNewPhone') || {}).value.trim();
   if (!newPhone) { errEl.textContent = t('enterNewPhone'); errEl.classList.add('show'); return; }
+  if (!/^\d{11}$/.test(newPhone)) { errEl.textContent = t('phone11') || '手机号需为11位数字'; errEl.classList.add('show'); return; }
   // 手机号唯一性由后端校验
   try {
     await sb.rpc('member_update_profile', { p_id: Store.member.id, p_phone: newPhone, p_name: null, p_nickname: null, p_email: null, p_username: null, p_moto_address: null, p_correio_address: null });
@@ -3221,6 +3455,233 @@ async function confirmEditPhone() {
 }
 
 // ==================== 用户中心 ====================
+async function fetchBrAddressByCep(cepRaw) {
+  const cep = String(cepRaw || '').replace(/\D/g, '');
+  if (cep.length !== 8) return null;
+  try {
+    const res = await fetch('https://viacep.com.br/ws/' + cep + '/json/');
+    const data = await res.json();
+    if (!data || data.erro) return null;
+    const parts = [data.logradouro, data.bairro].filter(Boolean);
+    const cityUf = [data.localidade, data.uf].filter(Boolean).join(' - ');
+    if (cityUf) parts.push(cityUf);
+    return {
+      cep: data.cep ? String(data.cep).replace(/\D/g, '') : cep,
+      address: parts.join(', '),
+      city: data.localidade || '',
+      uf: data.uf || '',
+      street: data.logradouro || '',
+      neighborhood: data.bairro || ''
+    };
+  } catch (e) {
+    console.warn('ViaCEP', e);
+    return null;
+  }
+}
+function autoFillBrCep(inputEl, prefix) {
+  const raw = String((inputEl && inputEl.value) || '').replace(/\D/g, '');
+  if (raw.length !== 8) return;
+  fetchBrAddressByCep(raw).then(function(info) {
+    if (!info) { toast(t('cepNotFound') || 'CEP 未找到，请手动填写', 'info'); return; }
+    const set = function(id, val) {
+      const el = $(id);
+      if (el && !String(el.value || '').trim()) el.value = val || '';
+    };
+    set(prefix + 'Uf', info.uf);
+    set(prefix + 'City', info.city);
+    set(prefix + 'Bairro', info.neighborhood);
+    set(prefix + 'Street', info.street);
+    toast(t('cepFilled') || '已根据 CEP 自动填写地址', 'success');
+  });
+}
+function syncBrAddressPreview(prefix) {
+  const el = $(prefix + 'Addr');
+  if (!el) return;
+  el.value = composeBrAddress(prefix) || '';
+}
+function composeBrAddress(prefix) {
+  const g = function(id) { return String(($(id) && $(id).value) || '').trim(); };
+  const street = g(prefix + 'Street');
+  const num = g(prefix + 'Num');
+  const comp = g(prefix + 'Comp');
+  const bairro = g(prefix + 'Bairro');
+  const city = g(prefix + 'City');
+  const uf = g(prefix + 'Uf');
+  const parts = [];
+  const door = [num, comp].filter(Boolean).join(' / ');
+  if (street) parts.push(door ? street + ', ' + door : street);
+  if (bairro) parts.push(bairro);
+  if (city || uf) parts.push([city, uf].filter(Boolean).join(' - '));
+  return parts.join(', ');
+}
+const ADDR_SLOTS = [ { k: 'default', name: '默认' }, { k: 'fav1', name: '常用1' }, { k: 'fav2', name: '常用2' }, { k: 'fav3', name: '常用3' }, { k: 'fav4', name: '常用4' } ];
+function slotName(k) {
+  const m = { 'default': t('slotDefault') || '默认', fav1: t('slotFav1') || '常用1', fav2: t('slotFav2') || '常用2', fav3: t('slotFav3') || '常用3', fav4: t('slotFav4') || '常用4' };
+  return m[k] || k;
+}
+function findAddrBySlot(slot) {
+  return (Store.addresses || []).find(function(a) { return String(a.label || '') === String(slot); }) || null;
+}
+function setCkAddrSlot(slot) {
+  window._ckAddrSlot = slot || 'default';
+  if (typeof renderPage === 'function') renderPage();
+}
+function openAddAddress() {
+  let ov = $('addrFormOv');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'addrFormOv';
+    ov.style.cssText = 'position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:320';
+    document.body.appendChild(ov);
+  }
+  ov.style.display = 'flex';
+  renderAddressManager();
+}
+function closeAddAddress() {
+  const ov = $('addrFormOv');
+  if (ov) ov.style.display = 'none';
+}
+function renderAddressManager() {
+  const ov = $('addrFormOv');
+  if (!ov) return;
+  const list = Store.addresses || [];
+  let items = '';
+  if (!list.length) {
+    items = '<div style="color:var(--txt3);font-size:.85rem;padding:.8rem 0">' + (t('noAddress') || '暂无地址') + '</div>';
+  } else {
+    list.forEach(function(a, idx) {
+      const brief = [a.recipient, a.phone, (a.address || a.detail || a.full_address || '')].filter(Boolean).join(' · ');
+      items += '<div class="uc-menu-item" onclick="openAddressDetail(' + Number(a.id) + ')" style="cursor:pointer;border:1px solid var(--border);border-radius:12px;margin-bottom:.55rem;padding:.75rem">'
+        + '<div style="font-size:.88rem;font-weight:600;color:var(--txt)">' + esc(a.recipient || '') + (a.is_default ? ' <span style="font-size:.65rem;color:var(--ac)">默认</span>' : '') + '</div>'
+        + '<div style="font-size:.78rem;color:var(--txt2);margin-top:.25rem;line-height:1.35">' + esc(brief) + '</div>'
+        + '</div>';
+    });
+  }
+  ov.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;max-width:380px;width:92%;max-height:86vh;overflow:auto">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem">'
+    + '<div style="font-weight:700;font-size:1.05rem">' + (t('addrManage') || '地址管理') + '</div>'
+    + '<button onclick="closeAddAddress()" style="border:1px solid var(--border);background:var(--bg3);color:var(--txt2);border-radius:8px;padding:.35rem .75rem;cursor:pointer">' + (t('close') || '关闭') + '</button>'
+    + '</div>'
+    + items
+    + '<button onclick="openAddressDetail(null)" style="width:100%;padding:.75rem;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer;margin-top:.35rem">' + (t('newAddress') || '新建地址') + '</button>'
+    + '</div>';
+}
+function parseBrAddressToFields(a, prefix) {
+  if (!a) return;
+  const full = String(a.address || a.detail || a.full_address || '');
+  const cityRaw = String(a.city || '');
+  let city = cityRaw, uf = '';
+  if (cityRaw.includes(' - ')) {
+    const i = cityRaw.lastIndexOf(' - ');
+    city = cityRaw.slice(0, i).trim();
+    uf = cityRaw.slice(i + 3).trim();
+  }
+  const set = function(id, v) { const el = $(id); if (el && !el.value) el.value = v || ''; };
+  set(prefix + 'City', city);
+  set(prefix + 'Uf', uf);
+  const parts = full.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (parts.length) set(prefix + 'Street', parts[0]);
+  if (parts.length >= 2) set(prefix + 'Bairro', parts[1]);
+}
+function openAddressDetail(id) {
+  const ov = $('addrFormOv');
+  if (!ov) return;
+  const list = Store.addresses || [];
+  const a = (id == null) ? null : list.find(function(x) { return Number(x.id) === Number(id); });
+  ov.style.display = 'flex';
+  ov.innerHTML = '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;max-width:380px;width:92%;max-height:86vh;overflow:auto">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem">'
+    + '<div style="font-weight:700;font-size:1.05rem">' + (a ? (t('addrDetail') || '地址详情') : (t('newAddress') || '新建地址')) + '</div>'
+    + '<button onclick="renderAddressManager()" style="border:1px solid var(--border);background:var(--bg3);color:var(--txt2);border-radius:8px;padding:.35rem .75rem;cursor:pointer">' + (t('back') || '返回') + '</button>'
+    + '</div>'
+    + '<input type="hidden" id="naId" value="' + (a ? esc(String(a.id)) : '') + '">'
+    + '<div class="form-group"><label>' + t('recipientName') + '</label><input type="text" id="naRecipient" maxlength="40" placeholder="' + t('enterRecipient') + '" value="' + esc((a && a.recipient) || '') + '"></div>'
+    + '<div class="form-group"><label>' + t('phone') + '</label><input type="tel" id="naPhone" maxlength="11" inputmode="numeric" placeholder="' + t('enterPhone11') + '" value="' + esc((a && a.phone) || '') + '"></div>'
+    + '<div class="form-group"><label>' + t('cepLabel') + '</label><input type="tel" id="naCep" maxlength="8" inputmode="numeric" placeholder="' + t('cepPH') + '" value="' + esc((a && (a.cep || '')) || '') + '" oninput="this.value=this.value.replace(/\D/g,\'\')" onblur="autoFillBrCep(this,\'na\')"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem">'
+    + '<div class="form-group"><label>' + t('stateLabel') + '</label><input type="text" id="naUf" oninput="syncBrAddressPreview(\'na\')"  maxlength="2" placeholder="UF" value="' + esc((a && (a.city && a.city.includes(' - ') ? a.city.split(' - ').pop() : (a.uf || ''))) || '') + '"></div>'
+    + '<div class="form-group"><label>' + t('cityLabel') + '</label><input type="text" id="naCity" oninput="syncBrAddressPreview(\'na\')"  placeholder="' + t('cityLabel') + '" value="' + esc((a && (a.city && a.city.includes(' - ') ? a.city.split(' - ')[0] : (a.city || ''))) || '') + '"></div>'
+    + '</div>'
+    + '<div class="form-group"><label>' + t('bairroLabel') + '</label><input type="text" id="naBairro" oninput="syncBrAddressPreview(\'na\')"  placeholder="' + t('bairroLabel') + '" value=""></div>'
+    + '<div class="form-group"><label>' + t('streetLabel') + '</label><input type="text" id="naStreet" oninput="syncBrAddressPreview(\'na\')"  placeholder="' + t('streetLabel') + '" value=""></div>'
+    + '<div class="form-group"><label>' + t('numLabel') + '</label><input type="text" id="naNum" maxlength="12" oninput="this.value=this.value.replace(/[^0-9A-Za-z]/g,\'\')" placeholder="123" value=""></div>'
+    + '<div class="form-group"><label>' + t('compLabel') + '</label><input type="text" id="naComp" maxlength="40" placeholder="Apto 101 / Bloco B" value=""></div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:.45rem;margin:.15rem 0 .95rem">'+ ADDR_SLOTS.map(function(s){ const on = ((a && (a.label || (a.is_default ? 'default' : ''))) || '') === s.k; return '<button type="button" class="naSlot" data-slot="' + s.k + '" onclick="pickNaSlot(this)" style="flex:1 1 auto;min-width:64px;padding:.65rem .45rem;border-radius:10px;border:1.5px solid ' + (on ? 'var(--ac)' : 'var(--border)') + ';background:' + (on ? 'var(--ac)' : 'var(--bg3)') + ';color:' + (on ? '#fff' : 'var(--txt2)') + ';font-size:.82rem;font-weight:600;cursor:pointer">' + s.name + '</button>';}).join('')+ '</div>'+ '<input type="hidden" id="naSlot" value="' + esc((a && (a.label || (a.is_default ? 'default' : 'default'))) || 'default') + '">'
+    + '<div style="display:flex;gap:.55rem">'
+    + '<button style="flex:1;padding:.7rem;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--txt2);cursor:pointer" onclick="renderAddressManager()">' + (t('cancel') || '取消') + '</button>'
+    + '<button style="flex:1;padding:.7rem;border-radius:10px;background:var(--ac);color:#fff;font-weight:600;cursor:pointer" onclick="saveNewAddress()">' + t('saveAddr') + '</button>'
+    + '</div>'
+    + '</div>';
+  try { parseBrAddressToFields(a, 'na'); syncBrAddressPreview('na'); } catch(_){}
+}
+async function pickNaSlot(btn) {
+  if (!btn) return;
+  const slot = btn.getAttribute('data-slot') || 'default';
+  const hidden = $('naSlot');
+  if (hidden) hidden.value = slot;
+  document.querySelectorAll('.naSlot').forEach(function(b) {
+    const on = b.getAttribute('data-slot') === slot;
+    b.style.borderColor = on ? 'var(--ac)' : 'var(--border)';
+    b.style.background = on ? 'var(--ac)' : 'var(--bg3)';
+    b.style.color = on ? '#fff' : 'var(--txt2)';
+  });
+}
+function toggleNaDefault(btn) {
+  if (!btn) return;
+  const on = btn.getAttribute('data-on') === '1' ? '0' : '1';
+  btn.setAttribute('data-on', on);
+  const active = on === '1';
+  btn.style.borderColor = active ? 'var(--ac)' : 'var(--border)';
+  btn.style.background = active ? 'var(--ac)' : 'var(--bg3)';
+  btn.style.color = active ? '#fff' : 'var(--txt2)';
+}
+async function saveNewAddress() {
+  if (!Store.member) return;
+  const id = (($('naId') || {}).value || '').trim();
+  const recipient = (($('naRecipient') || {}).value || '').trim();
+  const phone = (($('naPhone') || {}).value || '').trim();
+  const cep = (($('naCep') || {}).value || '').replace(/\D/g, '').trim();
+  const address = composeBrAddress('na') || (($('naAddr') || {}).value || '').trim();
+  const slot = (($('naSlot') && $('naSlot').value) || 'default');
+  const isDefault = slot === 'default';
+  if (!recipient) { toast(t('enterRecipient'), 'info'); return; }
+  if (!/^\d{11}$/.test(phone)) { toast(t('enterPhone11'), 'info'); return; }
+  if (!address) { toast(t('enterAddress'), 'info'); return; }
+  try {
+    if (isDefault) {
+      await sb.from('customer_addresses').update({ is_default: false }).eq('customer_id', Store.member.id);
+    }
+    if (id) {
+      const { error } = await sb.from('customer_addresses').update({
+        label: slot, recipient: recipient, phone: phone, address: address, cep: cep, city: [($('naCity') && $('naCity').value || '').trim(), ($('naUf') && $('naUf').value || '').trim()].filter(Boolean).join(' - '), is_default: isDefault
+      }).eq('id', Number(id)).eq('customer_id', Store.member.id);
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('customer_addresses').insert({
+        customer_id: Store.member.id,
+        label: slot,
+        label: slot,
+        recipient: recipient,
+        phone: phone,
+        address: address,
+        cep: cep,
+        city: [($('naCity') && $('naCity').value || '').trim(), ($('naUf') && $('naUf').value || '').trim()].filter(Boolean).join(' - '),
+        is_default: isDefault
+      });
+      if (error) throw error;
+    }
+    if (typeof loadMemberOrders === 'function') {
+      try { await loadMemberOrders(); } catch(_) {}
+    }
+    toast(t('addrSaved'), 'success');
+    renderAddressManager();
+    if (typeof renderPage === 'function') renderPage();
+  } catch (e) {
+    console.error('save address', e);
+    toast(t('updateFailed') + (e.message || ''), 'error');
+  }
+}
+
 function renderUserCenter() {
   const m = Store.member;
   const level = Store.levels.find(l => l.id === m.member_level) || Store.levels[0];
@@ -3236,17 +3697,12 @@ function renderUserCenter() {
   html += '<div class="uc-stats"><div class="uc-stat"><div class="uc-stat-val">' + (m.order_count || 0) + '</div><div class="uc-stat-label">' + t('myOrdersMenu') + '</div></div><div class="uc-stat"><div class="uc-stat-val">¥' + fmtPrice(m.total_spent || 0) + '</div><div class="uc-stat-label">' + t('itemTotal') + '</div></div><div class="uc-stat"><div class="uc-stat-val">' + (level ? level.discount < 1 ? (level.discount * 10).toFixed(1) + '折' : t('noDiscount') : '-') + '</div><div class="uc-stat-label">' + t('noDiscount') + '</div></div></div>';
   html += '</div>';
 
-  // Menu
-  html += '<div class="uc-section"><div class="uc-section-title">' + t('myServices') + '</div>';
-  html += '<div class="uc-menu-item" onclick="navigate(\'orders\')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg><span class="umt">' + t('myOrdersMenu') + '</span><span class="umd">' + Store.orders.length + ' ' + t('items') + '</span><span class="umr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span></div>';
-  html += '<div class="uc-menu-item" onclick="navigate(\'cart\')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span class="umt">' + t('cart') + '</span><span class="umd">' + Store.cart.length + ' ' + t('items') + '</span><span class="umr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span></div>';
-  html += '</div>';
-
   // Account info
   html += '<div class="uc-section"><div class="uc-section-title">' + t('accountInfo') + '</div>';
   html += '<div class="uc-menu-item" onclick="openEditUsername()" style="cursor:pointer"><span class="umi">👤</span><span class="umt">' + t('usernameLabel') + '</span><span class="umd">' + esc(m.username || t('notSet')) + '</span><span class="umr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span></div>';
   html += '<div class="uc-menu-item" onclick="openEditProfile(\'email\')" style="cursor:pointer"><span class="umi">📧</span><span class="umt">' + t('emailLabel') + '</span><span class="umd">' + esc(m.email || t('notBound')) + '</span><span class="umr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span></div>';
   html += '<div class="uc-menu-item" onclick="openEditProfile(\'phone\')" style="cursor:pointer"><span class="umi">📱</span><span class="umt">' + t('phoneLabel') + '</span><span class="umd">' + esc(m.phone || t('notBound')) + '</span><span class="umr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span></div>';
+  html += '<div class="uc-menu-item" onclick="openAddAddress()" style="cursor:pointer"><span class="umi">📍</span><span class="umt">' + t('addrManage') + '</span><span class="umd">' + ((Store.addresses && Store.addresses.length) ? Store.addresses.length + ' ' + t('items') : '') + '</span><span class="umr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span></div>';
   if (m.points) html += '<div class="uc-menu-item"><span class="umi">🎯</span><span class="umt">' + t('points') + '</span><span class="umd">' + m.points + '</span></div>';
   html += '<div class="uc-menu-item"><span class="umi">📅</span><span class="umt">' + t('regTime') + '</span><span class="umd">' + fmtDate(m.created_at) + '</span></div>';
   html += '</div>';
@@ -3265,13 +3721,7 @@ async function init() {
   await loadPaymentAccounts();
   if (Store.member) {
     await loadMemberOrders();
-    try {
-      const { data: dbCart } = await sb.from('cart_items').select('*').eq('customer_id', Store.member.id);
-      if (dbCart && dbCart.length) {
-        Store.cart = dbCart.map(c => ({ productId: c.product_id, qty: c.qty }));
-        saveCart();
-      }
-    } catch(e) {}
+    try { await loadCartFromDb(); } catch(e) {}
   }
   navigate('home');
   applyLang();
